@@ -1,0 +1,36 @@
+# Test prints
+
+[Back to the project](../README.md)
+
+Print these before anything else. They are the real mechanisms of View 2, or exact slices of them: a few hours of printing tell you whether the camera will work on your printer, before the body takes a day.
+
+![The test rigs, assembled](img/10_test_rigs.jpg)
+
+| Plate | Material | What |
+|---|---|---|
+| `plate_00a_shrink_gauge` | ASA | a 100 mm square frame: set the filament shrinkage first |
+| `plate_00b_test_lens_drive` | ASA | M65 thread ring, lens mount, lens board, pinion with its shaft, knob, rack, pinion block, rack carrier |
+| `plate_00c_test_ways_arca` | ASA | dovetail grooves and tongues (rigid and flexure), a slice of the Arca dovetail |
+| `plate_00d_test_tpu` | TPU 95A | two wave washers (external spool, not the AMS) |
+
+Settings as for the camera ([printing](printing.md)): 0.12 mm layers for the thread ring, the mount and the pinion, 0.16 mm for the rest, 100 % infill for the small parts.
+
+## Shrinkage first
+
+Print the gauge, let it cool for ten minutes and measure the outside of the frame with a caliper, on both axes. If it is not 100.0 mm, set the shrinkage in the slicer (Bambu Studio: filament settings, *Shrinkage*, the measured value in percent) and print it again. Every part of the camera is drawn to size; a filament that shrinks 0.5 % turns a sliding fit into a stuck one.
+
+## What to check
+
+| Test | How | Good | If not |
+|---|---|---|---|
+| M65 thread | screw your helicoid's rear thread into the ring | by hand, no wobble, it seats flat | tight: raise `M65_FIT` by 0.1; loose: lower it |
+| Focus direction | helicoid in the ring, look at it from the front and turn the grip toward close focus (the front comes out) | note which way it turns | clockwise: leave `FOCUS_DIR = 1`; anticlockwise: set `FOCUS_DIR = -1` before you print the lens panel, or the distance scale runs the wrong way |
+| Mount | screw the mount into the helicoid's front | by hand, it seats flat | tune the stub in `mech.mount` |
+| Bayonet | board in, turned 40 degrees back, then turn it to the stop | a click at the stop, no rattle, it comes out with a firm turn back | loose: `LUG_IN` +0.1; stiff click: the detent bump in `mech.mount` |
+| Knob | shaft through the block, a wave washer over it, push the knob on | it snaps home and turns with an even, light drag | too free: `KNOB_OFF` -0.1; too stiff: +0.1 |
+| Rack and pinion | press the rack into the carrier's slot, teeth out; lay the carrier on the block, its two rails on the face; turn the knob | smooth, no skipped teeth, 37.7 mm per turn | rough: check the shrinkage first |
+| Dovetails, rigid | slide the tongue in the plain groove | a light, even drag and no rocking | tight: `WAY_C_RIGID` +0.05 |
+| Dovetails, flexure | the same in the slotted groove | a firm drag and no play at all, never binding | too firm: `WAY_INTERF` -0.05; play: +0.05 |
+| Arca | clamp the coupon in your tripod head, tight | it holds and does not creep after a night | tell me: the fallback is a bought plate |
+
+Every value above is in `cad/params.py` (or at the top of `cad/mech.py`). Change it and run `python testplate.py` again; when all pass, run `python export.py` for the camera.

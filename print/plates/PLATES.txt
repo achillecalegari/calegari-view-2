@@ -1,0 +1,26 @@
+plate_01_black.3mf: body, knob_1
+plate_02_black.3mf: y_plate, lens_board, rack_shift, rack_rise, knob_2, graflok_wheel, plug_y_left, plug_y_right, plug_x_top, plug_x_bottom
+plate_03_black.3mf: graflok_module
+plate_04_black_0.12mm_layers.3mf: lens_panel, pinion_rise, pinion_shift
+plate_05_black_0.12mm_layers.3mf: lens_mount
+plate_06_red.3mf: graflok_blade
+plate_07_tpu.3mf: drag_washer_1, drag_washer_2
+
+body               x1  black      203.0 x  240.0 x  42.5  front face down: grooves, pockets and the engraved name on the bed
+y_plate            x1  black      159.0 x  159.0 x  15.8  front face down: tongues, rack slot and detent spring on top
+lens_panel         x1  black012   162.0 x  162.0 x  20.4  front face down: engraved scale on the bed, M65 thread at 0.12 mm
+lens_mount         x1  black012    78.0 x   78.0 x  10.5  stub down: M65 thread at 0.12 mm
+graflok_module     x1  black      131.5 x  130.0 x  12.2  seat face down: blade rails and M8 stud on top
+graflok_wheel      x1  black       16.0 x   16.0 x   5.0  M8 thread axis vertical
+lens_board         x1  black       70.0 x   70.0 x   3.0  rear face down
+pinion_rise        x1  black012    14.6 x   14.6 x  27.5  teeth on the bed: exact involutes
+pinion_shift       x1  black012    14.6 x   14.6 x  29.5  teeth on the bed: exact involutes
+knob               x2  black       20.0 x   20.0 x  15.0  crown down
+rack_rise          x1  black       68.2 x    5.3 x   6.0  lying on its side: teeth in the bed plane
+rack_shift         x1  black       69.4 x    5.2 x   6.0  lying on its side: teeth in the bed plane
+plug_y_left        x1  black        7.4 x    7.0 x   3.9  
+plug_y_right       x1  black        7.4 x    7.0 x   3.9  
+plug_x_top         x1  black        6.0 x    7.4 x   3.9  
+plug_x_bottom      x1  black        6.0 x    7.4 x   3.9  
+graflok_blade      x1  red         84.8 x   20.1 x   2.2  front face down
+drag_washer        x2  tpu         14.0 x   14.0 x   1.8  TPU 95A, external spool

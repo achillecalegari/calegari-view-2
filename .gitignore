@@ -1,0 +1,8 @@
+.venv
+.venv/
+out/
+ref/
+__pycache__/
+*.pyc
+.DS_Store
+render/*.blend1

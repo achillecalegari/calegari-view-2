@@ -1,0 +1,121 @@
+"""Calegari View 2: every dimension, in millimetres.
+
+View 2 rule: no heat-set inserts, springs, bushings, grub screws or balls. Parts join by dovetails,
+snaps and printed pins; springs are printed flexures. Bought: the M65 helicoid, the lens in its
+shutter, the RB67 back, the ground glass and a sheet of self-adhesive velvet.
+
+Coordinates as in View 1: Z optical axis (0 = film plane, +Z toward the subject), Y up, +X the
+photographer's LEFT (camera seen from behind).
+"""
+import math
+
+# ------------------------------------------------------------------ film, back, Graflok (as View 1)
+FILM_W, FILM_H = 69.5, 56.0
+SEAT_Z, GF_T = 4.8, 4.7
+GF_Z0 = SEAT_Z - GF_T
+
+# ------------------------------------------------------------------ movements
+RISE = FALL = SHIFT = 30.0             # each way; the lens's image circle limits combined moves to about 25 + 25
+
+# ------------------------------------------------------------------ the block: body, Y plate, lens panel
+# At zero the three plates are one square block. The Y plate is REVEAL smaller all round: a shadow line
+# between body and panel, and room for the rise knob's washer.
+BODY = 162.0
+H = BODY / 2
+REVEAL = 1.5
+YP_HALF = H - REVEAL                   # Y plate: 159 x 159
+CORNER_R = 9.0
+EDGE = 1.0
+BODY_Z0, BODY_Z1 = GF_Z0, 20.0
+GAP = 0.8                              # plate to plate: the velvet rides in it
+YP_Z0 = BODY_Z1 + GAP
+YP_T = 11.0
+YP_Z1 = YP_Z0 + YP_T
+XP_Z0 = YP_Z1 + GAP
+
+# ------------------------------------------------------------------ focusing and the lens mount
+FFD = 70.5                             # flange focal distance of the reference lens (Super-Angulon 65/8)
+M65 = 65.0
+M65_FIT = 0.35                         # extra on the major diameter of the printed female thread
+HELI_OD = 78.0
+HELI_MIN = 17.0                        # helicoid fully closed
+HELI_INF = 17.3                        # at infinity: 0.3 mm (7 degrees) short of the closed stop, like any lens
+HELI_TRAVEL = 14.0
+HELI_ROT = 313.0                       # degrees of grip rotation over the travel
+HELI_GRIP = (1.5, 11.5)                # knurled grip, from the shoulder
+PANEL_THREAD_L = 5.5                   # printed M65 x 1 female thread in the lens panel
+STUB_L = 5.5                           # the mount's male stub into the helicoid front
+MOUNT_L = 5.0                          # the mount ring in front of the helicoid
+XP_Z1 = FFD - MOUNT_L - HELI_INF       # lens panel front = helicoid shoulder
+XP_T = XP_Z1 - XP_Z0
+HELI_Z0 = XP_Z1
+MOUNT_R = HELI_OD / 2                  # the mount ring is flush with the helicoid: one barrel
+BOARD_R = 35.0                         # round lens board, 70 mm
+BOARD_T = 3.0
+BOARD_Z1 = FFD
+COPAL0_HOLE = 34.8
+BAYONET_LUGS = (30.0, 150.0, 270.0)    # lug centres, degrees from +Y toward -X
+LUG_SPAN = 34.0                        # angular width of a lug
+LOCK_TURN = 40.0
+FOCUS_DIR = 1                          # +1: the grip turns clockwise (seen from the front) toward close focus
+
+# ------------------------------------------------------------------ printed dovetail ways
+# A groove in the fixed plate, a tongue on the moving plate. Profile coordinates: u outward from the
+# axis of travel, w depth into the fixed plate from its face (the moving plate's back is at w = -GAP).
+# Inner walls are vertical; the outer walls lean out at 30 degrees (60 degree dovetail), so the two
+# grooves together hold the plate. The tongue tip bears on the groove floor: that sets the gap. One
+# groove's outer wall is a flexure beam that presses the tongue (no gib, no grubs).
+WAY_U_IN = 50.0
+WAY_U_MOUTH = 55.0
+WAY_D = 4.0
+WAY_TAN = math.tan(math.radians(30))
+WAY_C_RIGID = 0.05
+WAY_INTERF = 0.25
+WAY_C_IN = 0.3
+FLEX_T = 1.2
+FLEX_SLIT = 1.0
+FLEX_DEPTH = 7.0
+
+# ------------------------------------------------------------------ rack and pinion drives
+MOD = 1.0
+PIN_Z = 12                             # 37.7 mm of travel per turn
+PIN_X = 0.3                            # profile shift: no undercut with 12 teeth
+PRESS = 20.0                           # pressure angle
+PIN_W = 6.0
+SHAFT_D = 6.0
+SHAFT_FLAT = 0.6
+RACK_W = 6.0
+RACK_BASE = 3.0
+TIP_CLEAR = 0.3                        # rack tips to the face of the plate that carries the pinion
+KNOB_D, KNOB_H = 20.0, 15.0
+KNOB_OFF = 1.5                         # knob skirt to its face: the TPU wave washer (1.8 free) squeezed 0.3
+DRAG_WASHER = (6.6, 14.0, 1.8)         # ID, OD, free height: a 0.8 ring with three 0.5 bumps a side
+PIN_BORE_C = 0.15
+PRESS_FIT = 0.1                        # interference of the pressed parts (plugs, racks)
+
+# Rise: pinion in the body, axis X, knob on the photographer's right; rack on the Y plate's back.
+# Shift: pinion in the lens panel, axis Y, knob on its top edge (it rides with the lens); rack on the
+# Y plate's front. The rack tips stop TIP_CLEAR short of the pinion plate's face, the pinion reaches
+# across the gap into a band in the rack plate.
+RISE_PIN = (-68.0, 46.0, BODY_Z1 - 5.0)          # assembly coordinates; a round pocket clears the dark-slide relief
+SHIFT_PIN = (40.0, 66.0, XP_Z0 + 5.0)            # lens panel coordinates
+
+# ------------------------------------------------------------------ travel stops
+# Y plate: in from the bottom through the plinth; the groove's closed top end stops the rise, a printed
+# plug pressed into the groove's bottom end stops the fall. Lens panel: in from the photographer's
+# right (-X); the closed +X end stops it, a plug the other way.
+STOP_WALL = 3.0
+PLUG_L = 6.0
+Y_TONGUE = (-76.0, H - STOP_WALL - RISE)          # on the Y plate, plate coordinates
+X_TONGUE = (-YP_HALF + PLUG_L + SHIFT, YP_HALF - STOP_WALL - SHIFT)   # on the lens panel, panel coordinates
+
+# ------------------------------------------------------------------ foot, handle, Arca
+PLINTH, SIDE_T = 32.0, 32.0            # the plates travel 30 past the body: the clamp stays 2 mm clear
+L_Z0 = -22.5
+ARCA_ZC = -0.5
+ARCA_LEN = 70.0
+HANDLE_X = (-H, H + SIDE_T)            # full width: body plus the side leg
+HANDLE_H = 37.0                        # the body with plinth, rail and handle: 240 mm, the P1S plate minus margins
+HANDLE_POST = 13.0
+HANDLE_BAR = 10.0
+SHOES_X = (-16.0, 48.0)                # ISO 518 shoes, open to the rear, symmetric on the handle
