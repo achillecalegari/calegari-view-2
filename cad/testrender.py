@@ -27,6 +27,12 @@ car = Pos(0, 0, -GAP) * Rot(180, 0, 0) * M.rack_carrier()
 for n, s, m in (("block", blk, "body_black"), ("pinion", pin, "grey"), ("washer", washer, "rubber"), ("knob", kn, "body_black"),
                 ("rack", rk, "grey"), ("carrier", car, "red")):
     items.append((n, Pos(0, 40, 0) * flip(s), m))
+# 2b. worm rig: the block (a slice of the body, front face up), the short worm, its knob, the rack slice riding in
+T = Pos(185, 20, 0)
+kn = Pos(WORM_X, M.RIG_Y[1] + KNOB_OFF + KNOB_H, WORM_Z) * Rot(90, 0, 0) * M.knob()
+for n, s, m in (("worm_block", M.worm_block(), "body_black"), ("worm", M.test_worm_place(0) * M.test_worm(), "grey"),
+                ("worm_knob", kn, "body_black"), ("rack_slice", Pos(0, -M.WORM_LEAD, 0) * M.rack_slice(), "red")):
+    items.append((n, T * s, m))
 # 3. dovetail pairs (tongue in groove), face up
 for i, flex in enumerate((False, True)):
     g = M.way_coupon_fixed(flex); t = M.way_coupon_tongue(flex)

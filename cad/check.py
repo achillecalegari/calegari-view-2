@@ -11,18 +11,20 @@ from assembly import assemble
 BUDGET = {  # (prefix a, prefix b): max overlap in mm3, and why
     ("body", "y_plate"): (240, "flexure way: 0.25 mm preload along the tongue; detent bump pressed 0.4"),
     ("y_plate", "lens_panel"): (190, "flexure way: 0.25 mm preload along the tongue; detent bump pressed 0.4"),
+    ("body", "rotator"): (6, "three spring bumps pressed 0.4 into the rotator's front face"),
+    ("stop_peg", "body"): (8, "peg pressed into its hole"),
     ("knob_rise", "washer_rise"): (12, "wave washer's bumps squeezed 0.3 mm"),
     ("knob_shift", "washer_shift"): (12, "wave washer's bumps squeezed 0.3 mm"),
     ("plug_y", "body"): (30, "plugs pressed into the groove ends"),
     ("plug_x", "y_plate"): (30, "plugs pressed into the groove ends"),
-    ("rack_rise", "y_plate"): (40, "rack pressed into its slot"),
     ("rack_shift", "y_plate"): (40, "rack pressed into its slot"),
     ("mount", "helicoid"): (9999, "the mount's printed M65 stub in the helicoid's front thread (envelope)"),
     ("lens_body", "board"): (9999, "Copal 0 envelope through the board: not modelled in detail"),
     ("lens_glass", "lens_body"): (1e9, "the glass sits in the lens"),
-    ("rb_", "graflok_"): (9999, "the RB67 envelope has no Graflok lips or slots (proved on the real back)"),
+    ("rb_", "graflok_"): (9999, "the blade clamps the back: envelope"),
+    ("rb_", "rotator"): (9999, "the RB67 envelope has no Graflok lips or slots (proved on the real back)"),
     ("rb_", "rb_"): (9999, "the back's own parts"),
-    ("graflok_wheel", "graflok_module"): (25, "printed M8 threads engaged"),
+    ("graflok_wheel", "rotator"): (25, "printed M8 threads engaged"),
     ("dot", ""): (1e9, "paint fills of the dots: render only"),
 }
 
@@ -63,7 +65,8 @@ if __name__ == "__main__":
     print(f"printed parts that are not one solid: {solo or 'none'}")
     fails += len(solo)
     S = int(SHIFT)
-    states = [(0, 0, {}), (S, S, {}), (-S, -S, {}), (S, -S, {}), (-S, S, {}), (S, 0, {}), (0, -S, {}), (0, 0, {"blade_locked": False})]
+    states = [(0, 0, {}), (S, S, {}), (-S, -S, {}), (S, -S, {}), (-S, S, {}), (S, 0, {}), (0, -S, {}), (0, 0, {"blade_locked": False}),
+              (0, 0, {"rho": -90.0}), (-S, S, {"rho": -90.0}), (0, 0, {"rho": -45.0})]
     for sx, sy, kw in states:
         t = time.time()
         _, bad = run(sx, sy, **kw)

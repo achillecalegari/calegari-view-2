@@ -5,9 +5,14 @@ so the test plate proves the camera before the body is printed.
 Every part is built in its print orientation's frame unless noted: +Z up from the bed.
 """
 import math
+from functools import lru_cache
 from build123d import *
 from params import *
 from util import *
+try:
+    from bd_warehouse.thread import Thread
+except Exception:  # pragma: no cover
+    Thread = None
 
 
 # ------------------------------------------------------------------ M65 thread in the lens panel
@@ -57,7 +62,7 @@ def mount(thread=True):
     a = sfillet(a, [e for e in a.edges().filter_by(GeomType.CIRCLE) if e.radius > MOUNT_R - 0.1 and e.center().Z > z1 - 0.1], 0.8)
     # three lugs inward from the seat wall, in the board's rim groove; underside chamfered (no overhang)
     for c in BAYONET_LUGS:
-        lug = ring_sector(SEAT_R - LUG_IN, SEAT_R + 0.2, c - LUG_SPAN / 2, c + LUG_SPAN / 2, GROOVE_Z[0] + 0.1, GROOVE_Z[1] - 0.1)
+        lug = ring_sector(SEAT_R - LUG_IN, SEAT_R + 0.2, c - BAYONET_SPAN / 2, c + BAYONET_SPAN / 2, GROOVE_Z[0] + 0.1, GROOVE_Z[1] - 0.1)
         lug = schamfer(lug, [e for e in lug.edges().filter_by(GeomType.CIRCLE)
                              if abs(e.radius - (SEAT_R - LUG_IN)) < 0.05 and e.center().Z < GROOVE_Z[0] + 0.2], 0.6)
         a += lug
@@ -95,10 +100,10 @@ def board(ffd=FFD):
     gr0 = SEAT_R - LUG_IN - 0.25
     for c in BAYONET_LUGS:
         # groove from the entry position to the locked one (its end is the stop)
-        b -= ring_sector(gr0, BOARD_R + 1, c - LUG_SPAN / 2 - LOCK_TURN - 1.0, c + LUG_SPAN / 2 + 0.3, GROOVE_Z[0], GROOVE_Z[1])
+        b -= ring_sector(gr0, BOARD_R + 1, c - BAYONET_SPAN / 2 - LOCK_TURN - 1.0, c + BAYONET_SPAN / 2 + 0.3, GROOVE_Z[0], GROOVE_Z[1])
         # entry notch through the back of the rim, at the entry position: the lug passes it going in;
         # the rim in front of the groove stays whole and holds the board
-        b -= ring_sector(gr0, BOARD_R + 1, c - LUG_SPAN / 2 - LOCK_TURN - 1.0, c + LUG_SPAN / 2 - LOCK_TURN + 1.0, z0 - 1, GROOVE_Z[0] + 0.01)
+        b -= ring_sector(gr0, BOARD_R + 1, c - BAYONET_SPAN / 2 - LOCK_TURN - 1.0, c + BAYONET_SPAN / 2 - LOCK_TURN + 1.0, z0 - 1, GROOVE_Z[0] + 0.01)
     # detent notch: a V in the rim, where the mount's bump drops in at lock
     b -= Pos(*polar(BOARD_R + 0.2, DET_ANG), GROOVE_Z[1]) * Rot(0, 0, -DET_ANG) * Rot(0, 0, 45) * Box(1.3, 1.3, z1 - GROOVE_Z[1] + 1, align=(Align.CENTER, Align.CENTER, Align.MIN))
     b -= Pos(*polar(BOARD_R - 2.6, 0.0), z1 - 0.6) * Cylinder(1.1, 1.4, align=Z_UP)      # index dot (red)
@@ -220,6 +225,108 @@ def drag_washer():
 def block_shaft_len():
     """Shaft length for the test block: from the pinion face to the knob, which rides KNOB_OFF off the face."""
     return 44.0 / 2 + KNOB_OFF + KNOB_BORE - PIN_W / 2
+
+
+# ------------------------------------------------------------------ rise worm (self-locking)
+WORM_R = WORM_D / 2
+WORM_LEAD = math.pi * MOD                  # single start: pi mm per turn
+WORM_Y0 = 32.0                             # thread from here (assembly y) ...
+WORM_Y1 = 112.0                            # ... to here, into the handle bar
+WORM_PIN = (3.0, 4.0)                      # bottom pin: diameter, length (its end is the thrust bearing)
+WORM_TOP = H + HANDLE_H                    # the handle's top face: the knob rides KNOB_OFF above it
+_T20 = math.tan(math.radians(20))
+
+
+def worm_thread(length, bl):
+    """Module 1 worm along +Z from z = 0: straight-sided axial profile (ZA), teeth `bl` thinner than
+    nominal (negative: fatter, for cutting the rack)."""
+    core = cyl_z(WORM_R - 1.25 * MOD + 0.02, 0, length)
+    th = Thread(apex_radius=WORM_R + MOD, apex_width=math.pi / 2 - 2 * _T20 - bl, root_radius=WORM_R - 1.25 * MOD,
+                root_width=math.pi / 2 + 2 * 1.25 * _T20 - bl, pitch=WORM_LEAD, length=length, end_finishes=("fade", "fade"))
+    return core + th
+
+
+def worm_part(y0=WORM_Y0, y1=WORM_Y1, top=None):
+    """The rise worm, printed standing (thread axis vertical): bottom pin, thread from y0 to y1, then a
+    round shaft up through the handle to the knob, with the D flat and the snap groove of the other
+    shafts. Built along +Z, z = 0 at the pin's end."""
+    top = WORM_TOP if top is None else top
+    pd, pl = WORM_PIN
+    w = cyl_z(pd / 2, 0, pl + 0.01)
+    w += Pos(0, 0, pl) * worm_thread(y1 - y0, WORM_BL)
+    shaft_len = (top + KNOB_OFF + KNOB_BORE) - y1
+    z0 = pl + y1 - y0
+    s = cyl_z(SHAFT_D / 2, z0 - 0.01, z0 + shaft_len)
+    top = z0 + shaft_len
+    s -= box_at(SHAFT_D / 2 - SHAFT_FLAT, SHAFT_D, -SHAFT_D, SHAFT_D, top - KNOB_BORE - 1.5, top + 1)
+    zg = top - SNAP_FROM_END
+    s -= cyl_z(SHAFT_D / 2 + 1, zg, zg + 1.2) - cyl_z(SHAFT_D / 2 - 0.5, zg - 1, zg + 2)
+    s -= cyl_z(SHAFT_D / 2 + 1, zg + 1.2, zg + 1.7) - Pos(0, 0, zg + 1.2) * Cone(SHAFT_D / 2 - 0.5, SHAFT_D / 2, 0.5, align=Z_UP)
+    s = schamfer(s, s.edges().filter_by(GeomType.CIRCLE).group_by(Axis.Z)[-1], 0.5)
+    w += s
+    return schamfer(w, w.edges().filter_by(GeomType.CIRCLE).group_by(Axis.Z)[0], 0.3)
+
+
+def worm_place(theta=0.0):
+    """Worm frame -> assembly: axis +Y at (WORM_X, WORM_Z), turned theta degrees (right hand: turning it
+    clockwise seen from above raises the rack)."""
+    return Pos(WORM_X, WORM_Y0 - WORM_PIN[1], WORM_Z) * Rot(-90, 0, 0) * Rot(0, 0, theta)
+
+
+RACK_X = (WORM_X - WORM_R - 1.25 * MOD - RACK_BASE, WORM_X - WORM_R + MOD - 0.25)   # base .. tips (0.25 tip clearance)
+RACK_ZS = (WORM_Z - WORM_R - MOD - 0.4, YP_Z0 + 0.01)                              # across the worm, up to the Y plate
+
+
+@lru_cache(maxsize=None)
+def rise_rack(y0=WRACK[0], y1=WRACK[1]):
+    """Rise rack teeth on the Y plate's back (plate coordinates, the plate at zero). A worm that turns is
+    the same surface as a worm that slides along its axis, so the rack that meshes with it everywhere
+    across its face is simply the negative of the worm: a slice of a nut, cut by a worm WORM_BL fatter
+    than the real one. In each printed layer the section is the worm's own tooth profile."""
+    blk = box_at(RACK_X[0], RACK_X[1], y0, y1, *RACK_ZS)
+    k0 = math.floor((y0 - 2 * WORM_LEAD - WORM_Y0) / WORM_LEAD)
+    ys = WORM_Y0 + k0 * WORM_LEAD                  # in phase with the real worm's thread
+    hob = worm_thread((y1 - y0) + 4 * WORM_LEAD, -WORM_BL)
+    return blk - Pos(WORM_X, ys, WORM_Z) * Rot(-90, 0, 0) * hob
+
+
+RIG_Y = (WORM_Y0 - 2 * WORM_LEAD - 6.0, 70.0)   # the test rig: a slice of the body around the worm; its thread in phase with the camera's
+
+
+def test_worm():
+    """The rise worm, cut short for the rig: thread from the rig's bottom bearing to its top bearing."""
+    return worm_part(RIG_Y[0] + 6.0, RIG_Y[1] - 6.0, RIG_Y[1])
+
+
+def test_worm_place(theta=0.0):
+    return Pos(WORM_X, RIG_Y[0] + 6.0 - WORM_PIN[1], WORM_Z) * Rot(-90, 0, 0) * Rot(0, 0, theta)
+
+
+def worm_block():
+    """Test rig, assembly coordinates: the slice of the body around the worm (trough, rack channel, the
+    bottom pin's hole, the top bearing). It prints like the body, front face down."""
+    y0, y1 = RIG_Y
+    X0, X1 = -85.0, -60.0
+    blk = box_at(X0, X1, y0, y1, WORM_Z - WORM_R - 4.0, BODY_Z1)
+    blk -= box_at(RACK_X[0] - 0.5, RACK_X[1] + 0.4, y0 + 6.0, y1 - 6.0, RACK_ZS[0] - 0.4, BODY_Z1 + 1)
+    blk -= Pos(WORM_X, (y0 + y1) / 2, WORM_Z) * Rot(90, 0, 0) * Cylinder(WORM_R + MOD + 0.3, y1 - y0 - 12.0)
+    blk -= Pos(WORM_X, y0 + 6.0 - WORM_PIN[1] / 2 - 0.3, WORM_Z) * Rot(90, 0, 0) * Cylinder(WORM_PIN[0] / 2 + 0.15, WORM_PIN[1] + 0.6)
+    blk -= Pos(WORM_X, y1 - 3.0, WORM_Z) * Rot(90, 0, 0) * Cylinder(SHAFT_D / 2 + PIN_BORE_C, 6.2)
+    # the rack slice rides in from the top: the channel is open at the upper end above the bearing
+    blk -= box_at(RACK_X[0] - 0.5, RACK_X[1] + 0.4, y1 - 6.5, y1 + 1, RACK_ZS[0] - 0.4, BODY_Z1 + 1) - \
+        (Pos(WORM_X, y1 - 3.0, WORM_Z) * Rot(90, 0, 0) * Cylinder(SHAFT_D / 2 + 2.0, 7))
+    return sfillet(blk, blk.edges().filter_by(Axis.Y), 1.0)
+
+
+def rack_slice():
+    """Test rig, assembly coordinates: four teeth of the Y plate's rise rack on a slice of the plate, with
+    two rails as high as the gap that ride on the block's face. It prints like the Y plate, plate down."""
+    ya = 36.0
+    yb = ya + 4 * WORM_LEAD
+    part = rise_rack(ya, yb) + box_at(-85.0, -60.0, ya - 8, yb + 8, YP_Z0 - 0.01, YP_Z0 + 3.0)
+    for x0, x1 in ((-85.0, -82.0), (-63.0, -60.0)):
+        part += box_at(x0, x1, ya - 8, yb + 8, BODY_Z1 + 0.01, YP_Z0 + 0.01)
+    return part
 
 
 # ------------------------------------------------------------------ dovetail ways

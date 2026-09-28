@@ -10,13 +10,14 @@ ap.add_argument("--sy", type=float, default=0.0)
 ap.add_argument("--explode", type=float, default=0.0)
 ap.add_argument("--back", action="store_true")
 ap.add_argument("--thread", action="store_true")
+ap.add_argument("--rho", type=float, default=0.0)
 a = ap.parse_args()
 OUT = pathlib.Path(__file__).resolve().parent.parent / "out" / f"mesh_{a.tag}"
 OUT.mkdir(parents=True, exist_ok=True)
 for f in OUT.glob("*.stl"):
     f.unlink()
 man = []
-for i in assemble(a.sx, a.sy, a.explode, back=a.back, thread=a.thread):
+for i in assemble(a.sx, a.sy, a.explode, back=a.back, thread=a.thread, rho=a.rho):
     f = OUT / f"{i.name}.stl"
     export_stl(i.shape, str(f), tolerance=0.04, angular_tolerance=0.15)
     man.append({"name": i.name, "file": str(f), "mat": i.mat})

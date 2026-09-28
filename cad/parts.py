@@ -14,12 +14,15 @@ import mech as M
 PUPIL_Z, PUPIL_R, LIGHT_MARGIN = 55.0, 18.0, 1.5
 
 
+FRAME_HALF = max(FILM_W, FILM_H) / 2      # the back turns: the fixed openings see both orientations
+
+
 def cone_half(z, rel_x=0.0, rel_y=0.0):
     """Half-size of the light bundle at z, for a lens displaced (rel_x, rel_y) from the plate that cuts it:
     a plate that moves with the lens sees the bundle slide by (t - 1) times the move."""
     t = z / PUPIL_Z
-    hx = (1 - t) * FILM_W / 2 + t * PUPIL_R
-    hy = (1 - t) * FILM_H / 2 + t * PUPIL_R
+    hx = (1 - t) * FRAME_HALF + t * PUPIL_R
+    hy = (1 - t) * FRAME_HALF + t * PUPIL_R
     return hx + abs(rel_x) + LIGHT_MARGIN, hy + abs(rel_y) + LIGHT_MARGIN
 
 
@@ -119,16 +122,17 @@ def detent_cut(xy, z_face, into):
     return cut + u
 
 
-def detent_bump(xy, z_face, out):
+def detent_bump(xy, z_face, out, gap=GAP):
     xb, yb = xy
-    h = GAP + 0.4
+    h = gap + 0.4
     return Pos(xb, yb, z_face) * orient(Pos(0, 0, -0.01) * Cone(1.3, 0.3, h + 0.01, align=Z_UP), "+z" if out > 0 else "-z")
 
 
-def dimple(xy, z_face, into):
-    """Cone 0.6 deep: the bump sinks its 0.4 and the spring relaxes."""
+def dimple(xy, z_face, into, depth=0.6):
+    """Cone into the face. 0.6 deep: the bump sinks its 0.4 and the spring relaxes (the plates, held by
+    their flexure ways). Shallower: the spring keeps part of its preload (the rotator, held on its lugs)."""
     xb, yb = xy
-    c = Cone(1.2, 0.2, 0.6 + 0.01, align=Z_UP)
+    c = Cone(1.2, 1.2 - depth / 0.6, depth + 0.01, align=Z_UP)
     return Pos(xb, yb, z_face) * orient(Pos(0, 0, -0.01) * c, "+z" if into > 0 else "-z")
 
 
@@ -148,11 +152,10 @@ def rack_span(pin, lo, hi, hard_lo=-1e9, hard_hi=1e9):
     raise ValueError("no rack length")
 
 
-RISE_RACK = rack_span(RISE_PIN[1], RISE_PIN[1] - RISE - 4.0, RISE_PIN[1] + FALL + 2.5, hard_hi=YP_HALF)   # on the Y plate (plate y)
 SHIFT_RACK = rack_span(SHIFT_PIN[0], SHIFT_PIN[0] - SHIFT - 4.0, SHIFT_PIN[0] + SHIFT + 4.0, hard_hi=YP_HALF - 2.0)   # on the Y plate (x)
 
 
-# ------------------------------------------------------------------ Graflok (seat as View 1)
+# ------------------------------------------------------------------ Graflok seat on the rotator (as View 1)
 GF_HALF = 65.0
 POCKET_Y0, POCKET_Y1, POCKET_WALL_X = -39.3, 40.0, 55.0
 TRAP_X, TRAP_Y, TRAP_D = (-47.5, -42.5), (-36.0, 36.5), 1.5
@@ -162,10 +165,27 @@ LIP_RELIEF_X, LIP_RELIEF_Y, LIP_RELIEF_D = 44.0, (51.0, 64.0), 2.2
 GATE_W, GATE_H = 78.0, 60.0
 BLADE_TRAVEL, BLADE_Y0, BLADE_W, BLADE_T = 4.5, 40.6, 16.2, 2.2
 TONGUE_X = (-26.0, 26.0)
-GF_SNAP_Y = 12.0
-GF_SNAPS = ((1, 0.0), (-1, 52.0), (-1, -52.0))   # (side, y): the -X edge is open for the back's nose in |y| < 40
 WHEEL_XY = (0.0, 48.0)
 STUD_D, STUD_L = 8.0, 7.5
+ROT_FLOOR = ROT_Z1 + 0.2                 # the body's floor: the springs push the rotator 0.2 back onto the lugs
+GAP_ROT = ROT_FLOOR - ROT_Z1
+LAB_R = (69.8, 71.6)                     # labyrinth rib on the body floor, groove in the rotator
+STOP_PEG = dict(ang=0.0, z=5.2, d=3.0, r0=ROT_R - 1.1)   # radial peg through the body's side, into the rotator's arc groove
+HANDLE_Z0 = 2.0                          # the handle stands 2 mm off the back: the dark slide's grip passes under it in portrait
+
+
+def msector(r0, r1, a0, a1, z0, z1):
+    """Annular sector, angles in degrees counterclockwise from +X seen from the front."""
+    return ring_sector(r0, r1, a0 - 90.0, a1 - 90.0, z0, z1)
+
+
+def mpolar(r, a):
+    return (r * math.cos(math.radians(a)), r * math.sin(math.radians(a)))
+
+
+def rot_cone(c=0.0):
+    """The rotator's back edge, a 45 degree cone from ROT_R - LUG_CONE at its rear face to ROT_R."""
+    return Pos(0, 0, GF_Z0) * Cone(ROT_R - LUG_CONE + c, ROT_R + c + 0.01, LUG_CONE + 0.01, align=Z_UP)
 
 
 # ================================================================== BODY (one print, front face down)
@@ -176,59 +196,62 @@ NAME_SIZE, NAME_TRACK = 4.2, 0.28
 def name_plate():
     """Engraved name with a red dot before it, centred on the handle bar's front face."""
     txt, w = engraving(NAME, NAME_SIZE, 0.5, NAME_TRACK, FontStyle.BOLD)
-    xc = sum(HANDLE_X) / 2 + 4.0
+    xc = 4.0
     yc = H + HANDLE_H - HANDLE_BAR / 2
     return Pos(xc, yc, BODY_Z1) * txt, (xc - w / 2 - 6.0, yc)
 
 
 def body_part():
-    # one front block: body, plinth, side leg and handle share the front face; the foot goes deeper behind
-    x0, x1 = -H, H + SIDE_T
+    # one front block: body, plinth and handle share the front face; the plinth goes deeper behind
     y0, y1 = -H - PLINTH, H + HANDLE_H
-    b = extrude(Pos((x0 + x1) / 2, (y0 + y1) / 2, BODY_Z0) * RectangleRounded(x1 - x0, y1 - y0, CORNER_R), amount=BODY_Z1 - BODY_Z0)
-    b -= Pos((x0 + x1) / 2, (H + y1 - HANDLE_BAR) / 2, BODY_Z0 - 1) * extrude(
-        RectangleRounded(x1 - x0 - 2 * HANDLE_POST, y1 - HANDLE_BAR - H, 4.0), amount=BODY_Z1 - BODY_Z0 + 2)
-    b -= box_at(x0 + HANDLE_POST + 4.0, x1 - HANDLE_POST - 4.0, H - 0.5, H + 4.0, BODY_Z0 - 1, BODY_Z1 + 1)
-    L = extrude(Pos(SIDE_T / 2, -PLINTH / 2, L_Z0) * RectangleRounded(BODY + SIDE_T, BODY + PLINTH, CORNER_R), amount=BODY_Z1 - L_Z0)
-    L -= box_at(-H - 1, H + 0.01, -H + 0.01, H + 30, L_Z0 - 1, BODY_Z1 + 1)
-    b += L
+    b = extrude(Pos(0, (y0 + y1) / 2, BODY_Z0) * RectangleRounded(BODY, y1 - y0, CORNER_R), amount=BODY_Z1 - BODY_Z0)
+    b -= Pos(0, (H + y1 - HANDLE_BAR) / 2, BODY_Z0 - 1) * extrude(
+        RectangleRounded(BODY - 2 * HANDLE_POST, y1 - HANDLE_BAR - H, 4.0), amount=BODY_Z1 - BODY_Z0 + 2)
+    b -= box_at(-H + HANDLE_POST + 4.0, H - HANDLE_POST - 4.0, H - 0.5, H + 4.0, BODY_Z0 - 1, BODY_Z1 + 1)
+    b -= box_at(-H - 1, H + 1, H + 0.01, y1 + 1, BODY_Z0 - 1, HANDLE_Z0)          # the handle stands off the back
+    foot = extrude(Pos(0, (y0 - H) / 2, L_Z0) * RectangleRounded(BODY, PLINTH, 4.0), amount=BODY_Z1 - L_Z0)
+    b += foot
     b = sfillet(b, b.edges().filter_by(Plane.XY), EDGE)
-    # accessory shoes in the handle's top, open to the rear
-    for xs in SHOES_X:
-        b -= box_at(xs - 9.3, xs + 9.3, y1 - 3.6, y1 - 1.6, BODY_Z0 - 1, BODY_Z1 - 2.0)
-        b -= box_at(xs - 6.25, xs + 6.25, y1 - 1.7, y1 + 1, BODY_Z0 - 1, BODY_Z1 - 2.0)
-    # printed Arca dovetails: under the plinth (runs across) and on the side leg (runs up)
     b += arca_rail(Plane(origin=(0, -H - PLINTH, ARCA_ZC), x_dir=(0, 0, 1), z_dir=(1, 0, 0)))
-    b += arca_rail(Plane(origin=(H + SIDE_T, 0.0, ARCA_ZC), x_dir=(0, 0, 1), z_dir=(0, 1, 0)))
 
-    # Graflok recess, seat light traps, dark-slide relief
-    b -= box_at(-GF_HALF - 0.2, GF_HALF + 0.2, -GF_HALF - 0.2, GF_HALF + 0.2, BODY_Z0 - 1, SEAT_Z)
-    b -= box_at(TRAP_X[0], TRAP_X[1], TRAP_Y[0], TRAP_Y[1], SEAT_Z - 0.01, SEAT_Z + TRAP_D)
-    loop = Rectangle(2 * LOOP_X + 1.2, 2 * LOOP_Y + 1.2) - Rectangle(2 * LOOP_X - 1.2, 2 * LOOP_Y - 1.2)
-    b -= Pos(0, 0, SEAT_Z - 0.01) * extrude(loop, amount=1.0)
-    b -= box_at(-H - 1, SLIDE_RELIEF_X, -SLIDE_RELIEF_Y, SLIDE_RELIEF_Y, BODY_Z0 - 1, SLIDE_RELIEF_Z)
-    for s, yc in GF_SNAPS:
-        b -= box_at(s * (GF_HALF + 0.2) - 0.8, s * (GF_HALF + 0.2) + 0.8, yc - GF_SNAP_Y / 2 - 1, yc + GF_SNAP_Y / 2 + 1, BODY_Z0 + 1.0, BODY_Z0 + 3.0)
-    # gate, stepped against flare
-    h0 = opening_body(SEAT_Z)
-    h0 = (max(h0[0], GATE_W / 2), max(h0[1], GATE_H / 2))
-    b -= rect_loft(SEAT_Z - 0.5, h0, BODY_Z1 + 0.5, opening_body(BODY_Z1))
-    for z in (8.5, 12.5, 16.5):
+    # the rotator's recess, its two lugs (45 degree cones), the floor's labyrinth rib
+    b -= cyl_z(ROT_R + ROT_C, BODY_Z0 - 1, ROT_FLOOR)
+    for a in LUG_ANG:
+        lug = msector(ROT_R - LUG_CONE - 0.5, ROT_R + ROT_C + 0.5, a - LUG_SPAN / 2, a + LUG_SPAN / 2, BODY_Z0, BODY_Z0 + LUG_CONE)
+        lug -= rot_cone(0.08)
+        b += lug
+    b += cyl_z(LAB_R[1], ROT_FLOOR - 0.4, ROT_FLOOR + 0.01) - cyl_z(LAB_R[0], ROT_FLOOR - 1, ROT_FLOOR + 1)
+    # three flat springs in the floor push the rotator back and click into its dimples
+    for a in ROT_SPRINGS:
+        T = Rot(0, 0, a) * Pos(ROT_SPRING_R, 0, 0) * Rot(0, 0, 90)
+        b -= T * detent_cut((0.0, 0.0), ROT_FLOOR, +1)
+        b += T * detent_bump((0.0, 0.0), ROT_FLOOR, -1, GAP_ROT)
+    # the stop peg's hole, radial, from the photographer's left side face
+    pa, pz, pd = STOP_PEG["ang"], STOP_PEG["z"], STOP_PEG["d"]
+    b -= Rot(0, 0, pa) * Pos((STOP_PEG["r0"] + H + 2) / 2, 0, pz) * Rot(0, 90, 0) * Cylinder(pd / 2 - PRESS_FIT / 2, H + 2 - STOP_PEG["r0"])
+    # the dark slide leaves on the photographer's right in landscape and at the top in portrait
+    b -= box_at(-H - 1, -ROT_R + 1, -SLIDE_RELIEF_Y, SLIDE_RELIEF_Y, BODY_Z0 - 1, SLIDE_RELIEF_Z)
+    b -= box_at(-SLIDE_RELIEF_Y, SLIDE_RELIEF_Y, ROT_R - 1, H + 1, BODY_Z0 - 1, SLIDE_RELIEF_Z)
+    # the light path in front of the rotator: square (both orientations), stepped against flare
+    h0 = opening_body(ROT_FLOOR)
+    b -= rect_loft(ROT_FLOOR - 0.5, h0, BODY_Z1 + 0.5, opening_body(BODY_Z1))
+    for z in (12.0, 16.0):
         hz = opening_body(z)
         b -= box_at(-hz[0] - 1.6, hz[0] + 1.6, -hz[1] - 1.6, hz[1] + 1.6, z, z + 2.0)
 
     # vertical ways: two grooves, open at the bottom of the plinth, closed at the top
     y_top = Y_TONGUE[1] + RISE
-    for s in (-1, 1):
-        b -= prism_y(M.groove_profile(s == FLEX_SIDE_Y), s, BODY_Z1, -H - PLINTH - 1, y_top)
-        if s == FLEX_SIDE_Y:
-            b -= prism_y(M.flex_slit(), s, BODY_Z1, -H - PLINTH + 6.0, y_top - 4.0)
-    # rise drive: a round pocket around the pinion, open to the front; bearing out to the right side face
-    px, py, pz = RISE_PIN
-    xa, xb = px - PIN_W / 2 - 0.5, px + PIN_W / 2 + 0.5
-    b -= cyl_x(M.PIN_TIP + 0.4, xa, xb, py, pz)
-    b -= box_at(xa, xb, py - M.PIN_TIP - 0.4, py + M.PIN_TIP + 0.4, pz, BODY_Z1 + 1)
-    b -= cyl_x(SHAFT_D / 2 + PIN_BORE_C, -H - 1, px, py, pz)
+    for sd in (-1, 1):
+        b -= prism_y(M.groove_profile(sd == FLEX_SIDE_Y), sd, BODY_Z1, -H - PLINTH - 1, y_top)
+        if sd == FLEX_SIDE_Y:
+            b -= prism_y(M.flex_slit(), sd, BODY_Z1, -H - PLINTH + 6.0, y_top - 4.0)
+    # rise worm: a trough in the body and the left handle post, a channel for the Y plate's rack (open at
+    # the bottom: the plate goes in from below), the bottom pin's hole and the top bearing in the bar
+    b -= box_at(M.RACK_X[0] - 0.5, M.RACK_X[1] + 0.4, -H - PLINTH - 1, M.WORM_Y1, M.RACK_ZS[0] - 0.4, BODY_Z1 + 1)
+    y_tr = M.WORM_Y1 + M.WORM_PIN[1] + 1.0          # the worm goes in lifted by its pin's length: room above the thread
+    b -= Pos(WORM_X, (M.WORM_Y0 - 0.5 + y_tr) / 2, WORM_Z) * Rot(90, 0, 0) * Cylinder(M.WORM_R + MOD + 0.3, y_tr - M.WORM_Y0 + 0.5)
+    b -= Pos(WORM_X, M.WORM_Y0 - M.WORM_PIN[1] / 2 - 0.3, WORM_Z) * Rot(90, 0, 0) * Cylinder(M.WORM_PIN[0] / 2 + 0.15, M.WORM_PIN[1] + 0.6)
+    b -= Pos(WORM_X, (M.WORM_Y1 + y1) / 2 + 0.5, WORM_Z) * Rot(90, 0, 0) * Cylinder(SHAFT_D / 2 + PIN_BORE_C, y1 - M.WORM_Y1 + 2)
     b -= dimple(RISE_DETENT, BODY_Z1, -1)
     # rise index (red dot) on the right side face, by the Y plate's scale
     b -= Pos(-H, 0.0, BODY_Z1 - 2.2) * dot(2.4, 0.6, "-x")
@@ -245,35 +268,63 @@ def arca_rail(plane):
 
 
 # ================================================================== GRAFLOK MODULE, BLADE, WHEEL (as before)
-def graflok_module():
-    z0, z1 = GF_Z0, SEAT_Z
-    g = extrude(Pos(0, 0, z0) * RectangleRounded(2 * GF_HALF, 2 * GF_HALF, 6), amount=z1 - z0)
-    g = sfillet(g, g.edges().group_by(Axis.Z)[0], 0.8)
-    g -= box_at(-GF_HALF - 1, POCKET_WALL_X, POCKET_Y0, POCKET_Y1, z0 - 1, z1 + 1)
-    g -= box_at(-GF_HALF - 1, SLIDE_RELIEF_X, -SLIDE_RELIEF_Y, SLIDE_RELIEF_Y, z0 - 1, z1 + 1)
-    for s in (1, -1):
-        g -= box_at(-LIP_RELIEF_X, LIP_RELIEF_X, s * LIP_RELIEF_Y[0], s * LIP_RELIEF_Y[1], z0 - 1, z0 + LIP_RELIEF_D)
+def rotator(rho=0.0):
+    """The rotating back: View 1's Graflok seat on a round plate that turns rho degrees (0 landscape,
+    -90 portrait) in the body's recess. Its back edge is a 45 degree cone under the body's two lugs; three
+    springs in the recess floor push it onto them and click into its dimples at 0 and -90. Two notches
+    let it past the lugs only when turned ROT_ENTRY; the stop peg runs in an arc groove on its rim.
+    Printed front face down: the seat, the rails and the stud on top."""
+    z0, z1 = GF_Z0, ROT_Z1
+    g = rot_cone() + cyl_z(ROT_R, z0 + LUG_CONE, z1)
+    g = sfillet(g, g.edges().filter_by(GeomType.CIRCLE).group_by(Axis.Z)[-1], 0.6)
+    # the Graflok seat (as View 1): the back's nose pocket, the dark-slide relief, the lip reliefs
+    g -= box_at(-ROT_R - 1, POCKET_WALL_X, POCKET_Y0, POCKET_Y1, z0 - 1, SEAT_Z)
+    g -= box_at(-ROT_R - 1, SLIDE_RELIEF_X, -SLIDE_RELIEF_Y, SLIDE_RELIEF_Y, z0 - 1, SLIDE_RELIEF_Z)
+    for sd in (1, -1):
+        g -= box_at(-LIP_RELIEF_X, LIP_RELIEF_X, sd * LIP_RELIEF_Y[0], sd * LIP_RELIEF_Y[1], z0 - 1, z0 + LIP_RELIEF_D)
+    # the gate and the seat's light traps (they turn with the frame)
+    h0 = opening_body(SEAT_Z)
+    g -= box_at(-GATE_W / 2, GATE_W / 2, -GATE_H / 2, GATE_H / 2, SEAT_Z - 1, z1 + 1)
+    g -= box_at(TRAP_X[0], TRAP_X[1], TRAP_Y[0], TRAP_Y[1], SEAT_Z - 0.01, SEAT_Z + TRAP_D)
+    loop = Rectangle(2 * LOOP_X + 1.2, 2 * LOOP_Y + 1.2) - Rectangle(2 * LOOP_X - 1.2, 2 * LOOP_Y - 1.2)
+    g -= Pos(0, 0, SEAT_Z - 0.01) * extrude(loop, amount=1.0)
+    # the back's bottom rail and the blade's rails, the clamp stud (as View 1)
     rail = box_at(-56.0, 47.0, -43.0, POCKET_Y0, SEAT_Z - 6.6, z0 + 0.01)
     rail += box_at(-56.0, 47.0, -51.0, -43.0, SEAT_Z - 8.4, z0 + 0.01)
     rail = sfillet(rail, rail.edges().filter_by(Axis.X).group_by(Axis.Z)[0], 0.8)
     g += rail
-    for s, yc in GF_SNAPS:
-        g -= box_at(s * (GF_HALF - 2.7), s * (GF_HALF - 1.5), yc - GF_SNAP_Y / 2 - 5, yc + GF_SNAP_Y / 2 + 5, z0 - 1, z1 + 1)
-        g += box_at(s * GF_HALF - 0.01 * s, s * (GF_HALF + 0.75), yc - GF_SNAP_Y / 2, yc + GF_SNAP_Y / 2, z0 + 1.2, z0 + 2.8)
-    for s in (-1, 1):
+    for sd in (-1, 1):
         prof = [(42.7, 0.0), (47.0, 0.0), (47.0, BLADE_T + 1.2), (41.2, BLADE_T + 1.2), (41.2, BLADE_T), (42.7, 0.7)]
-        f = make_face(Polyline(*[(s * u, BLADE_Y0 - BLADE_TRAVEL - 1.5, z0 - w) for u, w in prof], close=True))
+        f = make_face(Polyline(*[(sd * u, BLADE_Y0 - BLADE_TRAVEL - 1.5, z0 - w) for u, w in prof], close=True))
         g += extrude(f, amount=BLADE_W + BLADE_TRAVEL + 4.0, dir=(0, 1, 0))
     wx, wy = WHEEL_XY
     g += cyl_z(STUD_D / 2 - 0.7, z0 - STUD_L, z0 + 0.01, wx, wy)
     if IsoThread is not None:
         g += Pos(wx, wy, z0 - STUD_L + 0.4) * IsoThread(major_diameter=STUD_D - 0.2, pitch=1.25, length=STUD_L - 0.9,
                                                         external=True, end_finishes=("fade", "square"))
-    g = schamfer(g, [e for e in g.edges() if abs(e.center().Z - z1) < 0.01], 0.3)
-    return g
+    # front face: the labyrinth groove, a dimple for each spring at both positions
+    g -= cyl_z(LAB_R[1] + 0.3, z1 - 0.5, z1 + 1) - cyl_z(LAB_R[0] - 0.3, z1 - 1, z1 + 2)
+    for a in ROT_SPRINGS:
+        for r in (0.0, -90.0):
+            g -= Rot(0, 0, a - r) * Pos(ROT_SPRING_R, 0, 0) * dimple((0.0, 0.0), z1, -1, 0.25)
+    # rim: two notches (the lugs pass here when it is turned ROT_ENTRY), the stop peg's arc groove
+    for a in LUG_ANG:
+        g -= msector(ROT_R - LUG_CONE - 0.4, ROT_R + 1, a - ROT_ENTRY - LUG_SPAN / 2 - 3, a - ROT_ENTRY + LUG_SPAN / 2 + 3, z0 - 1, z1 + 1)
+    pa, pz, pd = STOP_PEG["ang"], STOP_PEG["z"], STOP_PEG["d"]
+    half = math.degrees((pd / 2 + 0.3) / ROT_R)
+    g -= msector(STOP_PEG["r0"] - 0.4, ROT_R + 1, pa - half, pa + 90.0 + half, pz - pd / 2 - 0.3, pz + pd / 2 + 0.3)
+    return Rot(0, 0, rho) * g
 
 
-def graflok_blade(locked=True):
+def stop_peg():
+    """Radial peg, pressed through the body's left side face into the rotator's groove: it stops the back
+    at landscape and at portrait."""
+    pa, pz, pd = STOP_PEG["ang"], STOP_PEG["z"], STOP_PEG["d"]
+    L = H - STOP_PEG["r0"]
+    return Rot(0, 0, pa) * Pos(STOP_PEG["r0"] + L / 2, 0, pz) * Rot(0, 90, 0) * Cylinder(pd / 2, L - 0.05)
+
+
+def graflok_blade(locked=True, rho=0.0):
     z0 = GF_Z0 - BLADE_T
     oy = 0.0 if locked else -BLADE_TRAVEL
     y0 = BLADE_Y0
@@ -289,10 +340,10 @@ def graflok_blade(locked=True):
         cut = make_face(Polyline((s * 42.45, y0 - 1, zf - 0.95), (s * 43.5, y0 - 1, zf - 0.95), (s * 43.5, y0 - 1, z0 - 0.01),
                                  (s * 40.7, y0 - 1, z0 - 0.01), close=True))
         blade -= extrude(cut, amount=BLADE_W + 6, dir=(0, 1, 0))
-    return Pos(0, oy, 0) * blade
+    return Rot(0, 0, rho) * Pos(0, oy, 0) * blade
 
 
-def graflok_wheel():
+def graflok_wheel(rho=0.0):
     z1 = GF_Z0 - BLADE_T
     z0 = z1 - 5.0
     w = cyl_z(8.0, z0, z1)
@@ -302,7 +353,7 @@ def graflok_wheel():
     if IsoThread is not None:
         w += Pos(0, 0, z0) * IsoThread(major_diameter=STUD_D + 0.3, pitch=1.25, length=5.0, external=False, end_finishes=("fade", "fade"))
     w = schamfer(w, w.edges().filter_by(GeomType.CIRCLE).group_by(Axis.Z)[0], 0.5)
-    return Pos(*WHEEL_XY, 0) * w
+    return Rot(0, 0, rho) * Pos(*WHEEL_XY, 0) * w
 
 
 # ================================================================== Y PLATE (front face down)
@@ -326,12 +377,8 @@ def y_plate(sy=0.0):
         p -= prism_x(M.groove_profile(s == FLEX_SIDE_X), s, YP_Z1, -YP_HALF - 1, x_end)
         if s == FLEX_SIDE_X:
             p -= prism_x(M.flex_slit(), s, YP_Z1, -YP_HALF + 6.0, x_end - 4.0)
-    # rise rack in the back: a band for the body's pinion, open at the top edge (the plate goes in from
-    # below and the pinion runs down the band), and the rack's press-fit slot inside it
-    px, py, pz = RISE_PIN
-    L, c = RISE_RACK
-    p -= box_at(px - PIN_W / 2 - 0.5, px + PIN_W / 2 + 0.5, -YP_HALF + 4.0, YP_HALF + 1, YP_Z0 - 1, YP_Z0 + M.BAND)
-    p -= box_at(px - RACK_W / 2 + PRESS_FIT / 2, px + RACK_W / 2 - PRESS_FIT / 2, c - L / 2 - 0.02, YP_HALF + 1, YP_Z0 - 1, YP_Z0 + M.RACK_BACK + 0.05)
+    # rise rack: part of the plate, on its back; its teeth are the negative of the worm in the body
+    p += M.rise_rack()
     # shift rack in the front, fixed: the panel's pinion runs in a band open at the -X edge
     qx, qy, qz = SHIFT_PIN
     L, c = SHIFT_RACK
@@ -461,7 +508,7 @@ def lens_part(ffd=FFD):
     return rear + ring + shutter + front, glass
 
 
-def rb67_back():
+def rb67_back(rho=0.0):
     zf = GF_Z0 - 0.5
     nose = box_at(-61.0, POCKET_WALL_X - 0.3, POCKET_Y0 + 0.3, POCKET_Y1 - 0.3, zf, SEAT_Z)
     shell = Pos(0, 0, zf - 24) * Box(122, 108, 48)
@@ -469,7 +516,7 @@ def rb67_back():
     slide_handle = box_at(-66.0, -61.0, -36.0, 36.0, zf - 10.0, zf + 2.0)
     counter = box_at(-30, 30, 54, 58, zf - 40, zf - 8)
     lever = Pos(-44, 60, zf - 8) * Box(40, 5, 8)
-    return nose + shell + slide_handle + counter, lever
+    return Rot(0, 0, rho) * (nose + shell + slide_handle + counter), Rot(0, 0, rho) * lever
 
 
 # ================================================================== DOT INLAYS (renders; paint in print)

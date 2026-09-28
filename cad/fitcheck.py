@@ -85,4 +85,31 @@ knob_on = Pos(x_end - M.KNOB_BORE, 0, w_c) * Rot(0, -90, 0) * Pos(0, 0, -15.0) *
 report("wave washer squeeze (mm): free height minus the knob's offset", t - KNOB_OFF, 0.25, 0.35)
 report("knob vs washer: only the bumps (mm3)", ov(knob_on, washer), 1, 12)
 report("knob vs block (none)", ov(knob_on, blk), 0, 0.01)
+
+# ------------------------------------------------------------------ rise worm and the Y plate's rack
+import parts as P
+body = P.body_part()
+wp = M.worm_part()
+rk = M.rise_rack()
+worst = 0.0
+for sy in (-30.0, -17.3, -5.1, 0.0, 7.7, 21.9, 30.0):
+    th = -sy / M.WORM_LEAD * 360.0
+    worst = max(worst, ov(M.worm_place(th) * wp, Pos(0, sy, 0) * rk))
+report("worm vs rack over the whole travel (none)", worst, 0, 0.05)
+report("worm in its trough and bearings (none)", ov(M.worm_place(0) * wp, body), 0, 0.05)
+report("worm lifted by its pin to go in: clear of the body (none)", ov(Pos(0, M.WORM_PIN[1] + 0.6, 0) * M.worm_place(0) * wp, body), 0, 0.05)
+lam = math.degrees(math.atan(M.WORM_LEAD / (math.pi * WORM_D)))
+report("worm lead angle (deg): self-locking below the friction angle (about 17 dry)", lam, 0, 9)
+
+# ------------------------------------------------------------------ rotating back
+rot0 = P.rotator(0.0)
+report("rotator at landscape vs body: spring bumps, 0.15 mm residual preload", ov(rot0, body), 0.1, 6)
+report("rotator at portrait vs body: spring bumps, 0.15 mm residual preload", ov(P.rotator(-90.0), body), 0.1, 6)
+for dz in (-1.0, -2.5, -4.0, -8.0):
+    report(f"rotator turned {ROT_ENTRY:.0f} deg, {-dz:.1f} mm out: passes the lugs (bumps only)", ov(Pos(0, 0, dz) * P.rotator(ROT_ENTRY), body), 0, 6)
+for rho in (0.0, -45.0, -90.0):
+    report(f"rotator at {rho:.0f} deg pulled 1.5 mm back: held by the lugs", ov(Pos(0, 0, -1.5) * P.rotator(rho), body), 20, 1e6)
+peg = P.stop_peg()
+report("stop peg vs rotator at 0 and -90 (touch, no overlap)", max(ov(peg, P.rotator(0.0)), ov(peg, P.rotator(-90.0))), 0, 0.05)
+report("stop peg vs rotator turned 3 deg past either end: it stops", min(ov(peg, P.rotator(3.0)), ov(peg, P.rotator(-93.0))), 0.5, 1e6)
 sys.exit(1 if fails else 0)

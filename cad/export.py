@@ -14,7 +14,7 @@ from build123d import *
 from params import *
 import parts as P
 import mech as M
-from assembly import rise_shaft, shift_shaft
+from assembly import shift_shaft
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent / "print"
 BED = 256.0
@@ -41,13 +41,13 @@ def catalogue():
         ("y_plate", P.y_plate(), FLIP, 1, "black", "front face down: tongues, rack slot and detent spring on top"),
         ("lens_panel", P.lens_panel(thread=True), FLIP, 1, "black012", "front face down: engraved scale on the bed, M65 thread at 0.12 mm"),
         ("lens_mount", M.mount(thread=True), EYE, 1, "black012", "stub down: M65 thread at 0.12 mm"),
-        ("graflok_module", P.graflok_module(), FLIP, 1, "black", "seat face down: blade rails and M8 stud on top"),
+        ("rotator", P.rotator(), FLIP, 1, "black", "front face down: the seat, the rails and the M8 stud on top"),
+        ("rise_worm", M.worm_part(), EYE, 1, "black012", "standing: the thread axis vertical, pin down"),
+        ("stop_peg", Rot(0, -90, 0) * P.stop_peg(), EYE, 1, "black", "standing"),
         ("graflok_wheel", P.graflok_wheel(), EYE, 1, "black", "M8 thread axis vertical"),
         ("lens_board", M.board(), EYE, 1, "black", "rear face down"),
-        ("pinion_rise", M.pinion(rise_shaft()), EYE, 1, "black012", "teeth on the bed: exact involutes"),
         ("pinion_shift", M.pinion(shift_shaft()), EYE, 1, "black012", "teeth on the bed: exact involutes"),
         ("knob", M.knob(), EYE, 2, "black", "crown down"),
-        ("rack_rise", M.rack(P.RISE_RACK[0]), EYE, 1, "black", "lying on its side: teeth in the bed plane"),
         ("rack_shift", M.rack(P.SHIFT_RACK[0]), EYE, 1, "black", "lying on its side: teeth in the bed plane"),
         ("plug_y_left", P.way_plug_y(1), EYE, 1, "black", ""),
         ("plug_y_right", P.way_plug_y(-1), EYE, 1, "black", ""),

@@ -4,12 +4,13 @@
 
 ## From the bag to the negative
 
-1. **Tripod.** Clamp the Arca dovetail under the plinth for landscape, or the one on the side leg for portrait. Level the camera: a shoe level in one of the two accessory shoes on the handle does it. For architecture the camera stays level; the movements do the framing.
-2. **Zero.** Turn both knobs until they click: the red dots on the side and on top line up with the red indexes. The lens is centred on the film.
-3. **Compose.** Ground glass on, shutter open at full aperture, dark cloth. The rise knob is on the photographer's right: one turn moves the lens 37.7 mm. The shift knob is on top of the lens panel and travels with it. The dots are every 5 mm, the bigger ones every 10.
-4. **Focus.** Turn the helicoid's grip, with a loupe on the ground glass. The index on the grip reads the distance on the scale engraved around it.
-5. **Close the shutter**, set the aperture and speed, cock it.
-6. **Swap the ground glass for the film back** (Graflok: wheel loose, blade down, back on, blade up, wheel tight). Pull the dark slide, shoot, slide back in.
+1. **Tripod.** Clamp the Arca dovetail under the plinth. The camera goes on one way only; for portrait you turn the back, not the camera. Level it with the tripod head's level or a spirit level laid on the handle. For architecture the camera stays level; the movements do the framing.
+2. **Landscape or portrait.** Grip the back and turn it a quarter turn until it clicks.
+3. **Zero.** Turn both knobs until they click: the red dots on the side and on top line up with the red indexes. The lens is centred on the film.
+4. **Compose.** Ground glass on, shutter open at full aperture, dark cloth. The rise knob is on top of the handle's left end: clockwise raises the lens, 3.14 mm per turn, and it stays exactly where you leave it, whatever the lens weighs. The shift knob is on top of the lens panel and travels with it, 37.7 mm per turn. The dots are every 5 mm, the bigger ones every 10.
+5. **Focus.** Turn the helicoid's grip, with a loupe on the ground glass. The index on the grip reads the distance on the scale engraved around it.
+6. **Close the shutter**, set the aperture and speed, cock it.
+7. **Swap the ground glass for the film back** (Graflok: wheel loose, blade down, back on, blade up, wheel tight). Pull the dark slide, shoot, slide back in.
 
 ## What the movements are for
 
@@ -24,6 +25,6 @@ Turn the board firmly anticlockwise (seen from the front) until it stops, about 
 
 ## Care
 
-- A light coat of dry PTFE on the ways and the racks once a year. No oil or grease on the ASA.
+- A light coat of dry PTFE on the dovetails and the shift rack once a year. Never on the rise worm or its rack: they must stay dry to lock. No oil or grease anywhere on the ASA.
 - Keep it out of a hot car: ASA is fine to about 90 C, the velvet's glue is not.
-- If a plate gets stiff after months, the flexure takes up the wear by itself; stiff means dirt: slide the plate out (pull the two plugs with a pin), wipe, back in.
+- If a plate gets stiff after months, the flexure takes up the wear by itself; stiff means dirt: slide the plate out (pull the two plugs with a pin; for the Y plate, turn the rise knob anticlockwise to run the rack off the worm), wipe, back in.

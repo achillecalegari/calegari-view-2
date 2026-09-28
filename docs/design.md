@@ -2,7 +2,7 @@
 
 [Back to the project](../README.md)
 
-View 2 asks one question of [View 1](https://github.com/achillecalegari/calegari-view-1): which of its sixty-odd bought fasteners can a printer replace, and how, without the camera getting worse? All of them, it turned out. Then a second question: can it look like one object instead of a stack of parts?
+View 2 asks one question of [View 1](https://github.com/achillecalegari/calegari-view-1): which of its sixty-odd bought fasteners can a printer replace, and how, without the camera getting worse? All of them, it turned out. Then two more: can it look like one object instead of a stack of parts, and can the film turn instead of the camera?
 
 ## What replaced what
 
@@ -10,7 +10,8 @@ View 2 asks one question of [View 1](https://github.com/achillecalegari/calegari
 |---|---|---|
 | Printed rails screwed on with M2.5 and M3 into inserts | grooves cut into the body and the Y plate, tongues printed on the moving plates | grooves open on the bed, tongues on top, 30 degree flanks |
 | Gib strip and three grub screws per way | one groove's outer wall is a flexure beam, 1.2 mm thick and 7 mm tall, 0.25 mm interference | the slit prints open on the bed; the beam bends across the layers |
-| M6 threaded rod, brass nut, bushings, cap nut | module 1 rack and 12-tooth pinion, 37.7 mm per turn | teeth in the bed plane: exact involutes; the racks print lying on their side |
+| M6 lead screw, brass nut, bushings, cap nut (rise) | a printed worm, 8 mm pitch diameter, and a rack moulded into the Y plate, cut as the negative of the worm | the worm stands up; the rack's layers each hold the worm's tooth profile |
+| M6 lead screw and nut (shift) | module 1 rack and 12-tooth pinion, 37.7 mm per turn | teeth in the bed plane: exact involutes; the rack prints lying on its side |
 | O-ring under the knob | a TPU wave washer: a 0.8 mm ring on three feet each side, squeezed 0.3 mm | flat |
 | Ball plunger and dimple | a flat spring cut into the moving plate's back, with a bump near its free end, and a dimple in the other plate | the spring prints flat over a cavity |
 | Stud, nut and grub screw in the knob | the knob snaps onto a D shaft: two tabs drop into a groove | the tabs bend in the bed plane |
@@ -19,39 +20,59 @@ View 2 asks one question of [View 1](https://github.com/achillecalegari/calegari
 | Focus ring with four grub screws and a hidden stop | the helicoid's own grip; a scale engraved on the panel, an index painted on the grip | |
 | Technika board, holder, latch, spring, screws, inserts | a 70 mm round board on a three-lug bayonet with a flexure detent | the lugs' undersides are chamfered: no overhang |
 | Brass shims for other lenses | the board's plateau is printed for each lens's flange focal distance | `python board.py 71.2` |
-| Four screws and inserts on the Graflok module | three snap hooks into the body's recess | the hooks bend in the module's plane |
+| Graflok module, four screws, four inserts; an L bracket for portrait | a round rotator that carries the Graflok seat and turns the back 90 degrees, held by two lugs and three printed springs | front face down; the lugs are 45 degree cones, no overhang |
 | Graflok wheel on an M3 screw | a printed wheel on a printed M8 stud | stud printed standing |
-| Aluminium Arca plates, screws, inserts | Arca dovetails printed with the body | 45 degree flanks |
-| Top handle, screws, inserts, levels | printed with the body, full width; a shoe level if you want one | |
+| Two aluminium Arca plates, screws, inserts | one Arca dovetail printed with the body | 45 degree flanks |
+| Top handle, screws, inserts, levels | printed with the body, full width | |
 
 What stayed bought: the helicoid, a precision thread that must not wobble or tilt the lens, and it costs less than the test prints of a printed one; and the velvet. TPU lip seals were drawn and dropped: no single lip stays on solid faces on both sides while two plates slide in two directions. The velvet seals by area, as on View 1.
 
+## Why the front standard stays up
+
+The front standard (Y plate, lens panel, helicoid and a 65 mm lens in its shutter) weighs about 0.8 kg: 8 N on the rise drive. The first View 2 raised it with a rack and a 12-tooth pinion, like the shift. A spur pinion runs backwards as easily as forwards: 8 N at its 6 mm pitch radius is 0.05 N·m trying to turn the knob, and nothing but the friction of the ways was holding it. With a light coat of PTFE, which the guide recommended, the front would have crept down on its own.
+
+The rise is now a worm. One turn of the knob moves the plate one lead, pi mm, and the lead climbs the 8 mm worm at 7.1 degrees. A load on the rack pushes along the worm's axis, and it can only turn the worm if the flank's slope beats the friction on it: dry ASA on ASA has a friction angle of about 17 degrees, far above 7.1. The worm cannot be turned by its load, at any position, with any lens. PTFE would bring the friction angle near the lead angle, so the worm and its rack stay dry; the shift, which gravity does not pull while the camera is level, keeps its fast rack and pinion.
+
+The rack is the other half of the trick. A straight-toothed rack only matches a worm in the plane through its axis; a millimetre to either side the worm's flank has moved and the teeth collide (the first prototype did, by 3 to 9 mm³). But a worm that turns is the same surface as a worm that slides along its axis, so the rack that meshes with it over its whole face is simply the negative of the worm: a slice of a nut, cut by a worm 0.15 mm fatter than the real one. In each printed layer of the Y plate the rack's section is the worm's own tooth profile. `fitcheck.py` turns the worm through the whole travel against it: 0.003 mm³ of contact, numerical noise.
+
+The worm stands in the handle's left post, its knob on top of the handle, where your hand already is. Its pin is the thrust bearing at the bottom; the shaft turns in the handle's top.
+
+## The back turns, the camera does not
+
+View 1 needed an L bracket and a second Arca plate for portrait, and a camera on its side is awkward to use. View 2 turns the film instead. The Graflok seat, its rails, blade and wheel are one round plate, the rotator, 160 mm across, in a round recess in the body's back.
+
+- **Held:** two lugs at the recess rim, 45 degree cones on the underside, over a matching bevel on the rotator's back edge. Three flat springs cut into the recess floor push the rotator back onto them. The cone contact centres it and sets its plane; the film plane is the rotator's seat, and the ground glass and the film sit on the same seat, so focus stays true in both positions.
+- **Clicks:** each spring's bump drops into a shallow dimple at landscape and at portrait. The dimples are 0.25 mm deep against a 0.4 mm bump, so the springs keep part of their preload at rest: the rotator never floats.
+- **Stops:** a peg pressed through the body's left side face runs in a 90 degree groove on the rotator's rim.
+- **Goes in:** the rotator has two notches in its rim. Turned 135 degrees, and only there, they pass the lugs. The working range, 0 to -90, never reaches that angle, and the peg, pressed in last, makes sure of it.
+- **Dark:** the rotator's front face meets the recess floor across a ring rib that sits in a groove: light coming round the rim has to turn twice. The openings in front are square, so the frame fits in both orientations; that is also why the block grew from 162 to 170 mm.
+- **The dark slide:** it comes out on the photographer's right in landscape and at the top in portrait. The body is notched for it on both sides, and the handle stands 2 mm off the back so the slide's grip passes under it.
+
+The springs sit at 15, 135 and 255 degrees. Three springs 120 degrees apart never meet each other's dimples inside the working range, so the back clicks only at its two positions; and none of the six dimples falls in the dark-slide relief, where the rotator is thin.
+
 ## One block
 
-At zero the body, the Y plate and the lens panel are one square, 162 mm, with the Y plate 1.5 mm smaller all round: from the side the three layers read as a single block with two shadow lines. The body, the plinth, the side leg and the handle share one front face, printed in one piece. The front of the camera is the lens panel and the barrel, nothing else: the helicoid's grip and the lens mount are the same diameter, so they read as one barrel, and the distance scale is engraved around it. The knobs are the only things that stick out, one per movement, on the side and on top.
+At zero the body, the Y plate and the lens panel are one square, 170 mm, with the Y plate 1.5 mm smaller all round: from the side the three layers read as a single block with two shadow lines. The body, the plinth and the handle share one front face, printed in one piece. The front of the camera is the lens panel and the barrel, nothing else: the helicoid's grip and the lens mount are the same diameter, so they read as one barrel, and the distance scale is engraved around it. There are two knobs, both on top.
+
+Without the side leg the camera sits on the tripod one way. Its Arca dovetail is centred 30 mm behind the body's front face, under the rotator: at full fall the plates drop past the plinth in front of the clamp, so a 22 mm plinth is enough.
 
 ## Why 30 mm and not 40
 
-With sliding plates, the light seal is geometry. The middle plate must stay covered by the plate behind it at the end of its travel, and its own window has to be wider than the light cone by the other plate's travel. Each millimetre of travel costs about 3.2 mm of camera. At 30 mm each way the block is 162 mm, 14 mm more than View 1 at 25; at 40 it would be about 195 mm and the body would no longer print in one piece on a 256 mm bed. And a 65 mm lens with a 160 mm image circle covers 30 mm on one axis anyway, 25 + 25 combined: past that, a bigger camera buys nothing.
-
-## The drives
-
-The rise pinion lives in the body, its knob on the photographer's right, and its rack in the back of the Y plate. The shift pinion lives in the lens panel and its rack in the front of the Y plate, so the shift knob rides on top of the lens: the knob is where the lens is. In both, the rack's tips stop 0.3 mm short of the pinion plate's face, and the pinion reaches across the gap into a shallow band in the other plate: nothing drags on the sliding faces. Each rack is placed so that a tooth space faces the pinion at zero, and the whole travel is checked for interference in `check.py`.
-
-The rise pinion sits in a round pocket, not a square one: a square pocket would break into the relief for the RB67's dark slide behind it.
+With sliding plates, the light seal is geometry. The middle plate must stay covered by the plate behind it at the end of its travel, and its own window has to be wider than the light cone by the other plate's travel. Each millimetre of travel costs about 3.2 mm of camera. At 30 mm each way the block is 170 mm; at 40 it would be over 200 and the body would no longer print in one piece on a 256 mm bed. And a 65 mm lens with a 160 mm image circle covers 30 mm on one axis anyway, 25 + 25 combined: past that, a bigger camera buys nothing.
 
 ## Focusing and infinity
 
-The helicoid is closed at 17 mm; infinity is at 17.3. That is 0.3 mm, about 7 degrees of the grip, of travel past infinity, which every lens has and which makes infinity easy to find by feel. Everything else follows: the lens panel's front sits at 70.5 - 5 - 17.3 = 48.2 mm from the film, the mount is 5 mm long, the board's front is at the lens's flange focal distance. Changing lens changes only the board.
+The helicoid is closed at 17 mm; infinity is at 17.3. That is 0.3 mm, about 7 degrees of the grip, of travel past infinity, which every lens has and which makes infinity easy to find by feel. The lens panel's front sits at 70.5 - 5 - 17.3 = 48.2 mm from the film, the mount is 5 mm long, the board's front is at the lens's flange focal distance. Changing lens changes only the board.
 
 ## Findings along the way
 
-- **The helicoid's rear tube limits combined shifts.** Its bore (61 mm) sits 5.5 mm deep in the lens panel. At infinity the corners stay clean to 25 + 25 mm. Focused at about 0.9 m the lens moves out, the corner rays open up and the tube clips them past 22 + 22 mm. View 1's ray trace did not model the tube.
+- **The helicoid's rear tube limits combined shifts.** Its bore (61 mm) sits 5.5 mm deep in the lens panel. At infinity the corners stay clean to 25 + 25 mm; focused at about 0.9 m the lens moves out, the corner rays open up and the tube clips them past 22 + 22 mm. View 1's ray trace did not model the tube.
 - **A detent bump must sit near the spring's free end.** Near the root, a 1.4 mm ASA spring deflected 0.4 mm would see several times its yield stress; near the free end, 12 MPa and a light 2 N click. The bump also has to reach across the gap, or it never clicks.
-- **A solid TPU washer is a brick.** Squeezed 0.3 mm over its whole face it would push with hundreds of newtons. The wave washer bends between its feet: a few newtons, an even drag. The weight of the front standard is held by the flexure ways, not by the knob.
-- **Press fits need interference.** The plugs and the racks are drawn 0.1 mm larger than their slots; with zero they would fall out.
+- **A solid TPU washer is a brick.** Squeezed 0.3 mm over its whole face it would push with hundreds of newtons. The wave washer bends between its feet: a few newtons, an even drag.
+- **Press fits need interference.** The plugs, the rack and the stop peg are drawn 0.1 mm larger than their slots; with zero they would fall out.
+- **A part has to be able to go in.** The worm enters lifted by its pin's length, so its trough runs 5 mm past the thread into the handle; `fitcheck.py` checks it.
 - **A name prefix can hide a part.** An early ray trace skipped everything whose name began with "lens", including the lens panel. The panel is in the trace now.
 
 ## Checks
 
-`check.py` (every pair of parts, eight positions, designed contacts on a volume budget), `fitcheck.py` (the test plate mechanisms), `seal_check.py` (the velvet band), `optics_check.py` (ray trace through every part, at infinity and focused close).
+`check.py` (every pair of parts at eleven positions, landscape, portrait and half way; designed contacts on a volume budget), `fitcheck.py` (the mechanisms: worm and rack over the whole travel, the rotator going in, held and stopped, the bayonet, the pinion, the knobs, the dovetails), `seal_check.py` (the velvet band), `optics_check.py` (ray trace through every part, at infinity and focused close, in both orientations).
