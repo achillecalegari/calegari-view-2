@@ -2,7 +2,7 @@
 
 print/test/*.stl                       each test part on its own, in print orientation
 print/plates/plate_00a_shrink_gauge.3mf
-print/plates/plate_00b_test_lens_drive.3mf   ASA: M65 thread, mount + board, shift pinion rig, rise worm rig
+print/plates/plate_00b_test_lens_drive.3mf   ASA: M65 thread, mount + board, shift pinion rig, rise worm rig with its miter pair and knob
 print/plates/plate_00c_test_ways_arca.3mf    ASA: dovetail ways, Arca
 print/plates/plate_00d_test_tpu.3mf          TPU: two wave washers
 """
@@ -17,6 +17,7 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent / "print"
 BED = 256.0
 ON_SIDE = trimesh.transformations.rotation_matrix(math.pi / 2, [0, 1, 0])
 FLIP = trimesh.transformations.rotation_matrix(math.pi, [1, 0, 0])
+UP = trimesh.transformations.rotation_matrix(math.pi / 2, [1, 0, 0])
 
 
 def mesh(shape, tol=0.02):
@@ -71,11 +72,15 @@ def asa_parts():
         ("lens_board", placed(mesh(M.board()))),
         ("pinion_shaft", placed(mesh(M.pinion(M.block_shaft_len()), 0.01))),
         ("knob", placed(mesh(M.knob()))),
+        ("knob_b", placed(mesh(M.knob()))),
         ("rack_62", placed(mesh(M.rack(62.0), 0.01))),
         ("pinion_block", placed(mesh(M.pinion_block()))),
         ("rack_carrier", placed(mesh(M.rack_carrier()))),
         ("worm_short", placed(mesh(M.test_worm(), 0.01))),
         ("worm_block", placed(mesh(M.worm_block()), FLIP)),
+        ("worm_rig_plug", placed(mesh(M.rig_plug()), UP)),
+        ("knob_gear", placed(mesh(M.knob_gear(), 0.01), FLIP)),
+        ("collar", placed(mesh(M.collar()))),
         ("rise_rack_slice", placed(mesh(M.rack_slice()), FLIP)),
         ("way_groove_flexure", placed(mesh(M.way_coupon_fixed(True)))),
         ("way_groove_rigid", placed(mesh(M.way_coupon_fixed(False)))),

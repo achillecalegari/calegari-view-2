@@ -96,8 +96,49 @@ for sy in (-30.0, -17.3, -5.1, 0.0, 7.7, 21.9, 30.0):
     th = -sy / M.WORM_LEAD * 360.0
     worst = max(worst, ov(M.worm_place(th) * wp, Pos(0, sy, 0) * rk))
 report("worm vs rack over the whole travel (none)", worst, 0, 0.05)
-report("worm in its trough and bearings (none)", ov(M.worm_place(0) * wp, body), 0, 0.05)
-report("worm lifted by its pin to go in: clear of the body (none)", ov(Pos(0, M.WORM_PIN[1] + 0.6, 0) * M.worm_place(0) * wp, body), 0, 0.05)
+wpl = M.worm_place(0) * wp
+report("worm in its bore (none)", ov(wpl, body), 0, 0.05)
+report("worm goes in from below, before the Y plate: clear of the body (none)",
+       max(ov(Pos(0, -dy, 0) * wpl, body) for dy in (5.0, 20.0, 40.0, 70.0)), 0, 0.05)
+wplug, rplug = M.worm_plug(), M.rack_plug()
+report("worm plug pressed into the bore (its bottom band)", ov(wplug, body), 1, 20)
+report("rack plug pressed into the channel (its bottom band)", ov(rplug, body), 1, 20)
+report("plugs vs each other (none)", ov(wplug, rplug), 0, 0.01)
+report("worm plug vs worm: the pin's end on the seat (touch, no overlap)", ov(wplug, wpl), 0, 0.05)
+report("rack plug vs worm (none)", ov(rplug, wpl), 0, 0.05)
+report("rack plug vs rack at full fall (none)", ov(rplug, Pos(0, -FALL, 0) * rk), 0, 0.05)
+report("Y plate going in: its rack slides up past the worm plug (none)",
+       max(ov(wplug, Pos(0, sy, 0) * rk) for sy in (-70.0, -55.0, -45.0)), 0, 0.05)
+report("Y plate going in: the rack reaches the worm's thread end (they meet)", ov(wpl, Pos(0, -40.0, 0) * rk), 0.01, 200)
+kg = M.knob_gear()
+clip = box_at(WORM_X - 9, WORM_X + 9, M.BEVEL_Y - 10, M.BEVEL_Y + 7, WORM_Z - 7, WORM_Z + 7)
+worst = 0.0
+for th in (0.0, 6.0, 12.0, 18.0, 24.0):
+    worst = max(worst, ov((M.worm_place(th) * wp) & clip, (M.knob_gear_place(th) * kg) & clip))
+report("miter pair over one tooth pitch (none)", worst, 0, 0.01)
+report("miter pair: the knob turned 2 deg alone meets the worm (backlash under 2 deg)",
+       ov((M.worm_place(0) * wp) & clip, (M.knob_gear_place(2.0) * kg) & clip), 0.001, 1)
+kgp = M.knob_gear_place(0) * kg
+report("knob's gear in the side bore (none)", ov(kgp, body), 0, 0.05)
+report("knob's gear goes in from the side: clear of the body (none)",
+       max(ov(Pos(-dx, 0, 0) * kgp, body) for dx in (3.0, 8.0, 14.0)), 0, 0.05)
+bush = Pos(-H, M.BEVEL_Y, WORM_Z) * orient(M.collar(), "+x")
+report("collar pressed into the side bore", ov(bush, body), 0.5, 8)
+report("collar vs the knob's gear (none: 0.2 mm end play)", ov(bush, kgp), 0, 0.01)
+report("collar holds the gear: pulled out 0.3 mm it meets the collar", ov(bush, Pos(-0.3, 0, 0) * kgp), 0.01, 50)
+report("worm lifted 0.4 mm: its top boss meets the knob's stub", ov(Pos(0, 0.4, 0) * wpl & clip, kgp & clip), 0.001, 5)
+side = (WORM_X - M.BEVEL_R) + H
+kn_r = M.knob_gear_place(0) * Pos(0, 0, side + KNOB_OFF + KNOB_H) * Rot(180, 0, 0) * M.knob()
+report("rise knob vs body (none)", ov(kn_r, body), 0, 0.01)
+report("rise knob snapped on the gear's shaft", ov(kn_r, kgp), 0, 0.05)
+rb = M.worm_block()
+tw = M.test_worm_place(0) * M.test_worm()
+report("rig: short worm in the block (none)", ov(tw, rb), 0, 0.05)
+report("rig: plug pressed into the block (its bottom band)", ov(M.rig_plug(), rb), 1, 20)
+report("rig: plug vs worm (touch, no overlap)", ov(M.rig_plug(), tw), 0, 0.05)
+report("rig: knob's gear vs block (none)", ov(M.knob_gear_place(0) * kg, rb), 0, 0.05)
+report("rig: short worm vs rack slice (none)", ov(tw, Pos(0, -M.WORM_LEAD, 0) * M.rack_slice()), 0, 0.05)
+report("rig: rack slice slides up past the plug (none)", max(ov(M.rig_plug(), Pos(0, dy, 0) * M.rack_slice()) for dy in (-40.0, -30.0, -20.0)), 0, 0.05)
 lam = math.degrees(math.atan(M.WORM_LEAD / (math.pi * WORM_D)))
 report("worm lead angle (deg): self-locking below the friction angle (about 17 dry)", lam, 0, 9)
 
@@ -112,4 +153,12 @@ for rho in (0.0, -45.0, -90.0):
 peg = P.stop_peg()
 report("stop peg vs rotator at 0 and -90 (touch, no overlap)", max(ov(peg, P.rotator(0.0)), ov(peg, P.rotator(-90.0))), 0, 0.05)
 report("stop peg vs rotator turned 3 deg past either end: it stops", min(ov(peg, P.rotator(3.0)), ov(peg, P.rotator(-93.0))), 0.5, 1e6)
+# ------------------------------------------------------------------ Graflok blade: its stud slot stays inside it
+bl = P.graflok_blade()
+yb0, yb1 = P.BLADE_Y0, P.BLADE_Y0 + P.BLADE_W
+sy0 = P.WHEEL_XY[1] - 0.2 - (P.STUD_D + 0.4) / 2
+sy1 = P.WHEEL_XY[1] + P.BLADE_TRAVEL + 0.2 + (P.STUD_D + 0.4) / 2
+report("blade: material above the stud slot (mm)", yb1 - sy1, 1.5, 99)
+report("blade: material below the stud slot (mm)", sy0 - yb0, 1.5, 99)
+report("blade: one piece", len(bl.solids()), 1, 1)
 sys.exit(1 if fails else 0)

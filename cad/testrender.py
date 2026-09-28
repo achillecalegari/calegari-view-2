@@ -27,11 +27,16 @@ car = Pos(0, 0, -GAP) * Rot(180, 0, 0) * M.rack_carrier()
 for n, s, m in (("block", blk, "body_black"), ("pinion", pin, "grey"), ("washer", washer, "rubber"), ("knob", kn, "body_black"),
                 ("rack", rk, "grey"), ("carrier", car, "red")):
     items.append((n, Pos(0, 40, 0) * flip(s), m))
-# 2b. worm rig: the block (a slice of the body, front face up), the short worm, its knob, the rack slice riding in
+# 2b. worm rig: the top of the body's right side (front face up), the short worm, the miter pair, the collar,
+# the knob, the plug, and the rack slice riding on the face
 T = Pos(185, 20, 0)
-kn = Pos(WORM_X, M.RIG_Y[1] + KNOB_OFF + KNOB_H, WORM_Z) * Rot(90, 0, 0) * M.knob()
+G = M.knob_gear_place(0)
+side = (WORM_X - M.BEVEL_R) + H
+kn = G * Pos(0, 0, side + KNOB_OFF + KNOB_H) * Rot(180, 0, 0) * M.knob()
 for n, s, m in (("worm_block", M.worm_block(), "body_black"), ("worm", M.test_worm_place(0) * M.test_worm(), "grey"),
-                ("worm_knob", kn, "body_black"), ("rack_slice", Pos(0, -M.WORM_LEAD, 0) * M.rack_slice(), "red")):
+                ("worm_gear", G * M.knob_gear(), "grey"), ("worm_collar", Pos(-H, M.BEVEL_Y, WORM_Z) * orient(M.collar(), "+x"), "body_black"),
+                ("worm_knob", kn, "body_black"), ("worm_plug", M.rig_plug(), "body_black"),
+                ("rack_slice", Pos(0, -M.WORM_LEAD, 0) * M.rack_slice(), "red")):
     items.append((n, T * s, m))
 # 3. dovetail pairs (tongue in groove), face up
 for i, flex in enumerate((False, True)):

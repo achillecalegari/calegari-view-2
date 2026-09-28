@@ -4,7 +4,7 @@
 
 This guide assumes you have never built a camera. Each step is split into short sub-steps; every picture shows what is already built in place and only the parts of that sub-step pulled out along the way they go in, with a dashed line to where they go. The red letters match the table under the picture. Follow the steps in order: some parts cannot be reached later.
 
-There is no screw in the camera. Parts slide in dovetails, snap onto shafts, press into slots, and one worm threads into its rack. Allow two hours for the first build.
+There is no screw in the camera. Parts slide in dovetails, snap onto shafts, press into slots, and one worm threads into its rack. The two controls are knurled knobs: the rise one on the photographer's right side, the shift one on the lens panel's top edge. Allow two hours for the first build.
 
 ## Words used in this guide
 
@@ -12,7 +12,7 @@ There is no screw in the camera. Parts slide in dovetails, snap onto shafts, pre
 - **Photographer's left and right** are as you stand behind the camera looking at the ground glass. A picture taken from the front shows them mirrored: the photographer's right is on the left of the picture.
 - The **Y plate** moves up and down (rise and fall). The **lens panel** moves left and right (shift) and carries the lens. The **rotator** is the round plate at the back that carries the film back and turns it from landscape to portrait.
 - A **dovetail way** is a groove with a slanted outer wall and a tongue that slides in it. In each pair, one groove has a thin slot beside its wall: that wall is a **flexure**, a spring that presses the tongue and takes out the play.
-- The **worm** is the vertical screw in the handle's left post that raises the Y plate. Its **rack** is the row of teeth moulded into the back of the Y plate.
+- The **worm** is the vertical screw inside the body's right side that raises the Y plate. Its **rack** is the row of teeth moulded into the back of the Y plate. The rise knob turns the worm through two small bevel gears, a **miter pair**: one on the worm's top, one on the knob's shaft.
 - **Proud** means sticking out above a surface; **flush** means level with it.
 
 ## Before you start
@@ -34,9 +34,9 @@ There is no screw in the camera. Parts slide in dovetails, snap onto shafts, pre
 
 ### Four techniques you will use
 
-**1. Pressing.** The racks, the plugs and the stop peg are drawn 0.1 mm larger than their slots: they stay by friction alone. Start the part square in its slot, lay the wood on it and press with your thumb or the clamp until it is flush. Never a hammer: ASA cracks. If a part will not go, look at the slot for stringing before you push harder.
+**1. Pressing.** The racks, the plugs, the collar and the stop peg are drawn 0.1 mm larger than their slots: they stay by friction alone. Start the part square in its slot, lay the wood on it and press with your thumb or the clamp until it is flush. Never a hammer: ASA cracks. If a part will not go, look at the slot for stringing before you push harder.
 
-**2. Snapping a knob.** Each shaft ends in a D flat and a groove. Turn the knob until its D bore lines up with the flat, push it straight down: two tabs inside the knob spread and drop into the groove with a click. To take a knob off, pull it straight while rocking it slightly.
+**2. Snapping a knob.** Each shaft ends in a D flat and a groove. Turn the knob until its D bore lines up with the flat and push it on: two tabs inside the knob spread and drop into the groove with a click. To take a knob off, pull it straight off while rocking it slightly.
 
 **3. Velvet.** Light is kept out by sliding faces 0.8 mm apart with self-adhesive velvet between them. There are two pieces, V1 on the body and V2 on the Y plate.
 
@@ -45,13 +45,13 @@ There is no screw in the camera. Parts slide in dovetails, snap onto shafts, pre
 3. Measure the velvet with a caliper, pressing lightly: 0.9 to 1.2 mm.
 4. Degrease the plastic with alcohol. Peel off the backing, align one edge and lay the velvet down from that edge like a screen protector. Press it all over with your thumb.
 
-**4. Threading the worm.** The rack meets the worm the way a nut meets a screw: it will not slide on, it has to be turned on. When a rack touches the worm, turn the rise knob slowly while you push the plate gently: the first tooth finds the thread within a turn and the knob then draws the plate along by itself.
+**4. Threading the worm.** The rack meets the worm the way a nut meets a screw: it will not slide on, it has to be turned on. When the rack touches the worm, turn the rise knob slowly clockwise while you push the plate gently: the first tooth finds the thread within a turn and the knob then draws the plate up by itself.
 
 ---
 
-## 1. Body and rise worm
+## 1. Body and rise knob
 
-**You need:** the body, the rise worm, a knob, a wave washer (TPU).
+**You need:** the body, the rise knob's gear, the collar, a wave washer, a knob.
 
 ### 1a. Check the body
 
@@ -64,28 +64,27 @@ There is no screw in the camera. Parts slide in dovetails, snap onto shafts, pre
 | C | The stop peg's hole, on the photographer's left side | Open, round, clean. |
 | D | The ring rib in the recess floor | Whole all the way round: it is the light trap between the rotator and the body. |
 
-Also run a fingernail along the slit beside the groove on the photographer's left: it must be open for its whole length.
+Also run a fingernail along the slit beside the groove on the photographer's left: it must be open for its whole length. Look up the worm's bore from the bottom face with a torch: clean all the way to the side bore.
 
-### 1b. The rise worm
+### 1b. The knob's gear and the collar
 
-![1b](img/asm/1b_worm.jpg)
+![1b](img/asm/1b_rise_gear.jpg)
 
 | | Part | What to do |
 |---|---|---|
-| A | Rise worm | Hold it by its thread, shaft up. Push the shaft up through the bearing in the handle's top (C) from inside the post, until the pin at its bottom clears the lip of the trough. Lay the worm in its trough and let it down: the pin drops into its hole (B). |
-| B | Bottom hole | The pin sits in it; the pin's end is the thrust bearing that carries the front standard. |
-| C | Top bearing | The shaft sticks out of the handle's top by about 10 mm. |
+| A | Knob's gear | Gear first, push it into the round hole in the photographer's right side face, until it stops against nothing: it sits free, its shaft sticking out. |
+| B | Collar | Over the shaft and into the hole, flush with the side face (technique 1). It keeps the gear in; the gear turns freely behind it. |
 
-Turn the shaft with your fingers: the worm turns freely with no scraping.
-
-### 1c. Washer and knob
+### 1c. Washer and rise knob
 
 ![1c](img/asm/1c_rise_knob.jpg)
 
 | | Part | What to do |
 |---|---|---|
-| D | Wave washer | Over the shaft, flat on the handle's top. |
-| E | Knob | Snap it on (technique 2). It turns with a light, even drag. |
+| C | Wave washer | Over the shaft, against the collar. |
+| D | Knob | Onto the shaft, flat to flat, until it clicks (technique 2). |
+
+The knob turns with a light, even drag and nothing else: the worm is not in yet.
 
 ---
 
@@ -131,7 +130,7 @@ Now grip the rotator's rails and turn it: a quarter turn anticlockwise (seen fro
 
 | | Part | What to do |
 |---|---|---|
-| V1 | Velvet | On the body's front face between the two grooves, window over the window, from the top edge down over the plinth. It must not cover the grooves, the worm's channel on the photographer's right, or the zero-click dimple (F). |
+| V1 | Velvet | On the body's front face between the two grooves, window over the window, from the top edge to the bottom edge. It must not cover the grooves, the rack's channel on the photographer's right, or the zero-click dimple (F). |
 
 ---
 
@@ -166,26 +165,39 @@ Now grip the rotator's rails and turn it: a quarter turn anticlockwise (seen fro
 
 ---
 
-## 5. The Y plate into the body
+## 5. The rise worm and the Y plate
 
-**You need:** the Y plate as built in step 4, two plugs Y.
+**You need:** the rise worm, the worm plug, the Y plate as built in step 4, two plugs Y, the rack plug.
 
-### 5a. Up from below
+### 5a. The worm, up from below
 
-![5a](img/asm/5a_y_in.jpg)
-
-| | Part | What to do |
-|---|---|---|
-| A | Y plate | Hold it under the camera, rear toward the body, its two tongues in the body's two grooves, and slide it up from the bottom of the plinth. The rise rack runs up the channel on the photographer's right. |
-| B | Rise knob | When the rack reaches the worm the plate stops: turn the knob clockwise (seen from above) while you push gently (technique 4). The worm draws the plate up. Keep turning to the top, where it stops. |
-
-### 5b. The plugs
-
-![5b](img/asm/5b_plugs_y.jpg)
+![5a](img/asm/5a_worm.jpg)
 
 | | Part | What to do |
 |---|---|---|
-| C | Two plugs Y | Press them into the bottom ends of the two grooves, under the plinth, flush. They stop the fall and keep the plate in. |
+| A | Rise worm | Camera on its back, bottom face toward you. Gear first, push the worm up its bore at the photographer's right, as far as it goes. |
+| C | The miter pair | When the worm's gear reaches the knob's gear it stops: turn the rise knob a little while you push, the teeth slip into mesh and the worm goes the last millimetres. |
+| B | Worm plug | Round, with a hole in its top face: hole first, into the bore, under the worm's pin, flush with the bottom face (technique 1). The pin sits in the hole; its end is the thrust bearing that carries the front standard. The plug has a flat notch on one side: turn it to face the camera's centre, in line with the rack's channel. |
+
+Turn the knob: the worm turns with it, freely, with no scraping.
+
+### 5b. The Y plate, up from below
+
+![5b](img/asm/5b_y_in.jpg)
+
+| | Part | What to do |
+|---|---|---|
+| D | Y plate | Hold it under the camera, rear toward the body, its two tongues in the body's two grooves, and slide it up from the bottom of the body. The rise rack runs up the channel on the photographer's right, past the worm plug. |
+| E | Rise knob | When the rack reaches the worm the plate stops: turn the knob clockwise while you push gently (technique 4). The worm draws the plate up. Keep turning to the top, where it stops. |
+
+### 5c. The plugs
+
+![5c](img/asm/5c_plugs.jpg)
+
+| | Part | What to do |
+|---|---|---|
+| F | Two plugs Y | Press them into the bottom ends of the two grooves, under the body, flush. They stop the fall and keep the plate in. |
+| G | Rack plug | Press it into the rack's channel beside the worm plug, flush. It closes the channel below the rack's lowest point. |
 
 Turn the rise knob through the whole travel, 60 mm: about 19 turns, even all the way, one click at zero. Let go anywhere: the plate stays.
 
@@ -224,14 +236,14 @@ Turn the rise knob through the whole travel, 60 mm: about 19 turns, even all the
 |---|---|---|
 | B | Two plugs X | With the panel pushed fully to the photographer's left, press them into the right-hand ends of the two grooves, flush. They stop the shift and keep the panel in. |
 
-### 7c. Washer and knob
+### 7c. Washer and shift knob
 
 ![7c](img/asm/7c_shift_knob.jpg)
 
 | | Part | What to do |
 |---|---|---|
 | C | Wave washer | Over the shaft, on the panel's top edge. |
-| D | Knob | Snap it on. The shift knob rides with the lens: one turn moves the panel 37.7 mm. |
+| D | Knob | Push it onto the shaft, flat to flat, until it clicks (technique 2). It rides with the lens, in the middle of the handle's window at zero: one turn moves the panel 37.7 mm. |
 
 ---
 

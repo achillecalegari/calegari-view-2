@@ -121,19 +121,23 @@ KNOB_BORE = 10.0                           # shaft length inside the knob
 SNAP_FROM_END = 6.2                        # the shaft's snap groove starts this far from its end
 
 
+def knob_end(s, top):
+    """The end of a round shaft along +Z that ends at `top`: D flat for the knob and a ring groove for the
+    knob's snap tabs."""
+    s -= box_at(SHAFT_D / 2 - SHAFT_FLAT, SHAFT_D, -SHAFT_D, SHAFT_D, top - KNOB_BORE - 1.5, top + 1)
+    zg = top - SNAP_FROM_END
+    s -= cyl_z(SHAFT_D / 2 + 1, zg, zg + 1.2) - cyl_z(SHAFT_D / 2 - 0.5, zg - 1, zg + 2)
+    s -= cyl_z(SHAFT_D / 2 + 1, zg + 1.2, zg + 1.7) - Pos(0, 0, zg + 1.2) * Cone(SHAFT_D / 2 - 0.5, SHAFT_D / 2, 0.5, align=Z_UP)
+    return schamfer(s, s.edges().filter_by(GeomType.CIRCLE).group_by(Axis.Z)[-1], 0.5)
+
+
 def pinion(shaft_len):
     """Pinion with its shaft, printed standing (teeth on the bed): D flat for the knob, a ring groove for
     the knob's snap tabs near the end."""
-    groove_at = shaft_len - SNAP_FROM_END
     g = extrude(poly_face(gear_profile(MOD, PIN_Z, PIN_X, PRESS)), amount=PIN_W)
     g = schamfer(g, g.edges().filter_by(Plane.XY).group_by(Axis.Z)[0], 0.3)   # elephant foot
     s = cyl_z(SHAFT_D / 2, PIN_W - 0.01, PIN_W + shaft_len)
-    s -= box_at(SHAFT_D / 2 - SHAFT_FLAT, SHAFT_D, -SHAFT_D, SHAFT_D, PIN_W + shaft_len - KNOB_BORE - 1.5, PIN_W + shaft_len + 1)
-    zg = PIN_W + groove_at
-    s -= cyl_z(SHAFT_D / 2 + 1, zg, zg + 1.2) - cyl_z(SHAFT_D / 2 - 0.5, zg - 1, zg + 2)
-    s -= cyl_z(SHAFT_D / 2 + 1, zg + 1.2, zg + 1.7) - Pos(0, 0, zg + 1.2) * Cone(SHAFT_D / 2 - 0.5, SHAFT_D / 2, 0.5, align=Z_UP)
-    s = schamfer(s, s.edges().filter_by(GeomType.CIRCLE).group_by(Axis.Z)[-1], 0.5)
-    return g + s
+    return g + knob_end(s, PIN_W + shaft_len)
 
 
 def knob():
@@ -230,10 +234,21 @@ def block_shaft_len():
 # ------------------------------------------------------------------ rise worm (self-locking)
 WORM_R = WORM_D / 2
 WORM_LEAD = math.pi * MOD                  # single start: pi mm per turn
-WORM_Y0 = 32.0                             # thread from here (assembly y) ...
-WORM_Y1 = 112.0                            # ... to here, into the handle bar
-WORM_PIN = (3.0, 4.0)                      # bottom pin: diameter, length (its end is the thrust bearing)
-WORM_TOP = H + HANDLE_H                    # the handle's top face: the knob rides KNOB_OFF above it
+WORM_Y0 = WRACK[0] - RISE - 2.0            # thread from here (assembly y) ...
+WORM_Y1 = WRACK[1] + RISE + 2.0            # ... to just above the rack's highest point
+WORM_PIN = (3.0, 4.0)                      # bottom pin: diameter, length; it sits in the plug, its end the thrust bearing
+WORM_BORE = WORM_R + MOD + 0.3             # the worm's bore in the body, straight up from the bottom face: it goes in from below
+
+# the miter pair: the worm's gear on its top, the knob's gear on a shaft through the right side face.
+# Their axes meet at (WORM_X, BEVEL_Y, WORM_Z); both gears stay inside the worm's own envelope (r 5.1).
+BEVEL_R = BEVEL_M * BEVEL_Z / 2            # pitch radius at the heel
+BEVEL_K = 1 - BEVEL_B * math.sin(math.radians(45)) / BEVEL_R   # toe / heel
+BEVEL_BACK = 1.5                           # the back cone runs this far behind the heel's pitch circle
+BEVEL_J = 3.5                              # the thread's end to the worm gear's heel: back cone and the cone to the journal
+BEVEL_Y = WORM_Y1 + BEVEL_J + BEVEL_R      # where the axes meet: the knob's height on the side
+assert abs(BEVEL_Y - HANDLE_H / 2) < 0.01    # the middle of the side face, body and handle post together
+BEVEL_PHASE = 15.0                         # half a tooth: the knob's gear meets the worm's in a gap
+COLLAR_L = 3.0                               # the collar pressed into the side bore holds the knob's gear in
 _T20 = math.tan(math.radians(20))
 
 
@@ -246,25 +261,100 @@ def worm_thread(length, bl):
     return core + th
 
 
-def worm_part(y0=WORM_Y0, y1=WORM_Y1, top=None):
-    """The rise worm, printed standing (thread axis vertical): bottom pin, thread from y0 to y1, then a
-    round shaft up through the handle to the knob, with the D flat and the snap groove of the other
-    shafts. Built along +Z, z = 0 at the pin's end."""
-    top = WORM_TOP if top is None else top
+def miter():
+    """Straight miter gear: heel pitch circle at z = 0, the teeth ruled toward the apex at z = BEVEL_R and
+    ending on the back cone (45 degrees, through the heel's pitch circle), as on a real bevel gear: behind
+    it only the core, inside the mating gear's reach. The core narrows along the back cone to BEVEL_BACK,
+    then opens at 45 degrees to the journal. Standing, heel down, nothing overhangs past 45 degrees."""
+    R, k, L0 = BEVEL_R, BEVEL_K, BEVEL_BACK
+    pts = gear_profile(BEVEL_M, BEVEL_Z, BEVEL_X)
+    s0 = (R + L0) / R
+    heel = Plane.XY.offset(-L0) * poly_face([(x * s0, y * s0) for x, y in pts])
+    toe = Plane.XY.offset(R * (1 - k)) * poly_face([(x * k, y * k) for x, y in pts])
+    g = loft([heel, toe], ruled=True)
+    g &= Pos(0, 0, -R) * Cone(0.01, 2 * R, 2 * R, align=Z_UP)                  # r <= R + z: the back cone
+    rj = WORM_BORE - 0.3
+    g += Pos(0, 0, -L0 - (rj - (R - L0))) * Cone(rj, R - L0, rj - (R - L0) + 0.01, align=Z_UP)
+    return g
+
+
+def worm_part(y0=WORM_Y0, y1=WORM_Y1):
+    """The rise worm, printed standing (thread axis vertical): bottom pin, thread from y0 to y1, a journal
+    that runs in the bore, the miter gear and a small boss on its toe (it stops the worm lifting against
+    the knob's shaft). Built along +Z, z = 0 at the pin's end; assembly y = y0 - pin + z."""
     pd, pl = WORM_PIN
+    base = y0 - pl
     w = cyl_z(pd / 2, 0, pl + 0.01)
     w += Pos(0, 0, pl) * worm_thread(y1 - y0, WORM_BL)
-    shaft_len = (top + KNOB_OFF + KNOB_BORE) - y1
-    z0 = pl + y1 - y0
-    s = cyl_z(SHAFT_D / 2, z0 - 0.01, z0 + shaft_len)
-    top = z0 + shaft_len
-    s -= box_at(SHAFT_D / 2 - SHAFT_FLAT, SHAFT_D, -SHAFT_D, SHAFT_D, top - KNOB_BORE - 1.5, top + 1)
-    zg = top - SNAP_FROM_END
-    s -= cyl_z(SHAFT_D / 2 + 1, zg, zg + 1.2) - cyl_z(SHAFT_D / 2 - 0.5, zg - 1, zg + 2)
-    s -= cyl_z(SHAFT_D / 2 + 1, zg + 1.2, zg + 1.7) - Pos(0, 0, zg + 1.2) * Cone(SHAFT_D / 2 - 0.5, SHAFT_D / 2, 0.5, align=Z_UP)
-    s = schamfer(s, s.edges().filter_by(GeomType.CIRCLE).group_by(Axis.Z)[-1], 0.5)
-    w += s
+    zh = y1 + BEVEL_J - base
+    zb = zh - BEVEL_BACK - (WORM_BORE - 0.3 - (BEVEL_R - BEVEL_BACK))
+    w += cyl_z(WORM_BORE - 0.3, y1 - base - 0.01, zb + 0.01)
+    w += Pos(0, 0, zh) * miter()
+    zt = zh + BEVEL_R * (1 - BEVEL_K)
+    w += cyl_z(1.4, zt - 0.01, zh + BEVEL_R - 1.5)
     return schamfer(w, w.edges().filter_by(GeomType.CIRCLE).group_by(Axis.Z)[0], 0.3)
+
+
+def knob_gear():
+    """The knob's shaft, printed standing, gear down: the miter gear with a stub toward the axes' meeting
+    point, a journal in the side bore, then the D shaft out through the collar into the knob. Built
+    along +Z with the heel at z = 0 and the gear toward -Z (the side face is at z = heel - side)."""
+    side = (WORM_X - BEVEL_R) - (-H)                      # heel to the side face
+    g = Rot(180, 0, 0) * (miter() + cyl_z(1.2, BEVEL_R * (1 - BEVEL_K) - 0.01, BEVEL_R + 1.5))
+    zb = BEVEL_BACK + (WORM_BORE - 0.3 - (BEVEL_R - BEVEL_BACK))
+    j = cyl_z(WORM_BORE - 0.3, zb - 0.01, side - COLLAR_L - 0.2)
+    top = side + KNOB_OFF + KNOB_BORE
+    s = knob_end(cyl_z(SHAFT_D / 2, side - COLLAR_L - 0.21, top), top)
+    return g + j + s
+
+
+def knob_gear_place(theta=0.0):
+    """Knob gear frame -> assembly: axis -X out of the right side face; turned with the worm (1:1)."""
+    return Pos(WORM_X - BEVEL_R, BEVEL_Y, WORM_Z) * Rot(0, -90, 0) * Rot(0, 0, theta - BEVEL_PHASE)
+
+
+def collar():
+    """Ring pressed into the side bore, flush with the face, under the knob: it keeps the knob's gear in.
+    Built along +Z, z 0..COLLAR_L."""
+    return cyl_z(WORM_BORE + PRESS_FIT / 2, 0, COLLAR_L) - cyl_z(SHAFT_D / 2 + PIN_BORE_C, -1, COLLAR_L + 1)
+
+
+PLUG_BAND = 6.0                            # the long plugs press only over their bottom band; above it they slide
+
+
+def worm_seat(y0, pin_end, cut=None):
+    """Round plug from y0 up to just under the worm's thread, with the pin's hole: the pin's end bears on
+    the hole's floor. It presses over its bottom band and slides above it. Assembly coordinates; `cut`
+    is taken out of it (the rack's channel)."""
+    pd, pl = WORM_PIN
+    yt = pin_end + pl - 0.3
+    cyl = lambda r, a, b: Pos(WORM_X, (a + b) / 2, WORM_Z) * Rot(90, 0, 0) * Cylinder(r, b - a)
+    p = cyl(WORM_BORE - 0.1, y0, yt) + cyl(WORM_BORE + PRESS_FIT / 2, y0, y0 + PLUG_BAND)
+    p -= cyl(pd / 2 + 0.15, pin_end, pin_end + pl + 0.2)
+    return p - cut if cut is not None else p
+
+
+def _channel(y0, y1, grow=0.0):
+    return box_at(RACK_CH[0] - grow, RACK_CH[1] + grow, y0, y1, RACK_CH[2] - grow, BODY_Z1 + 1)
+
+
+def worm_plug():
+    """Pressed into the worm's bore from below right after the worm: its seat carries the worm's pin (the
+    thrust bearing). Cut back where the rack's channel crosses the bore, so the Y plate's rack slides up
+    past it. Assembly coordinates."""
+    return worm_seat(-H, WORM_Y0 - WORM_PIN[1], _channel(-H - 1, 0.0, PRESS_FIT / 2))
+
+
+def rack_plug():
+    """Pressed into the rack's channel from below after the Y plate: it fills the channel up to the rack's
+    lowest point, around the worm's thread. It presses over its bottom band and slides above it.
+    Assembly coordinates."""
+    yr = WRACK[0] - FALL - 0.4
+    yw = WORM_Y0 - 0.3
+    x0, x1, z0 = RACK_CH
+    ch = box_at(x0 + 0.1, x1 - 0.1, -H, yr, z0 + 0.1, BODY_Z1 - 0.1)
+    ch += _channel(-H, -H + PLUG_BAND, PRESS_FIT / 2) - box_at(x0 - 1, x1 + 1, -H - 1, -H + PLUG_BAND + 1, BODY_Z1, BODY_Z1 + 2)
+    return ch - Pos(WORM_X, (yw + yr + 1) / 2, WORM_Z) * Rot(90, 0, 0) * Cylinder(WORM_BORE, yr + 1 - yw)
 
 
 def worm_place(theta=0.0):
@@ -273,8 +363,9 @@ def worm_place(theta=0.0):
     return Pos(WORM_X, WORM_Y0 - WORM_PIN[1], WORM_Z) * Rot(-90, 0, 0) * Rot(0, 0, theta)
 
 
-RACK_X = (WORM_X - WORM_R - 1.25 * MOD - RACK_BASE, WORM_X - WORM_R + MOD - 0.25)   # base .. tips (0.25 tip clearance)
+RACK_X = (WORM_X + WORM_R - MOD + 0.25, WORM_X + WORM_R + 1.25 * MOD + RACK_BASE)   # tips .. base, on the worm's inboard side
 RACK_ZS = (WORM_Z - WORM_R - MOD - 0.4, YP_Z0 + 0.01)                              # across the worm, up to the Y plate
+RACK_CH = (RACK_X[0] - 0.4, RACK_X[1] + 0.5, RACK_ZS[0] - 0.4)                   # the rack's channel in the body: x0, x1, z0
 
 
 @lru_cache(maxsize=None)
@@ -290,38 +381,50 @@ def rise_rack(y0=WRACK[0], y1=WRACK[1]):
     return blk - Pos(WORM_X, ys, WORM_Z) * Rot(-90, 0, 0) * hob
 
 
-RIG_Y = (WORM_Y0 - 2 * WORM_LEAD - 6.0, 70.0)   # the test rig: a slice of the body around the worm; its thread in phase with the camera's
+RIG_N = 13                                 # the rig's worm starts this many leads above the camera's: in phase with the rack
+RIG_Y = (WORM_Y0 + RIG_N * WORM_LEAD - WORM_PIN[1] - 6.0, BEVEL_Y + 9.0)   # the rig: the top of the body's right side
 
 
 def test_worm():
-    """The rise worm, cut short for the rig: thread from the rig's bottom bearing to its top bearing."""
-    return worm_part(RIG_Y[0] + 6.0, RIG_Y[1] - 6.0, RIG_Y[1])
+    """The rise worm, cut short for the rig: the same top (journal, miter), a shorter thread."""
+    return worm_part(WORM_Y0 + RIG_N * WORM_LEAD, WORM_Y1)
 
 
 def test_worm_place(theta=0.0):
-    return Pos(WORM_X, RIG_Y[0] + 6.0 - WORM_PIN[1], WORM_Z) * Rot(-90, 0, 0) * Rot(0, 0, theta)
+    return Pos(WORM_X, WORM_Y0 + RIG_N * WORM_LEAD - WORM_PIN[1], WORM_Z) * Rot(-90, 0, 0) * Rot(0, 0, theta)
+
+
+def rise_cuts(y_bottom):
+    """The rise drive's room in the body (assembly coordinates): the worm's bore up from y_bottom, the
+    side bore for the knob's gear and the collar, the rack's channel (open to the front)."""
+    c = Pos(WORM_X, (y_bottom - 1 + BEVEL_Y) / 2, WORM_Z) * Rot(90, 0, 0) * Cylinder(WORM_BORE, BEVEL_Y - y_bottom + 1)
+    x1 = WORM_X + 3.0                     # past the stub on the knob's gear
+    c += Pos((-H - 1 + x1) / 2, BEVEL_Y, WORM_Z) * Rot(0, 90, 0) * Cylinder(WORM_BORE, x1 + H + 1)
+    return c
 
 
 def worm_block():
-    """Test rig, assembly coordinates: the slice of the body around the worm (trough, rack channel, the
-    bottom pin's hole, the top bearing). It prints like the body, front face down."""
+    """Test rig, assembly coordinates: the top of the body's right side around the drive (the worm's
+    bore, the miter pair's room, the side bore, the rack's channel). It prints like the body, front face
+    down; the worm goes in from below, a short plug closes the bore, then the rack slice slides up the
+    channel past the plug."""
     y0, y1 = RIG_Y
-    X0, X1 = -85.0, -60.0
+    X0, X1 = -H, -60.0
     blk = box_at(X0, X1, y0, y1, WORM_Z - WORM_R - 4.0, BODY_Z1)
-    blk -= box_at(RACK_X[0] - 0.5, RACK_X[1] + 0.4, y0 + 6.0, y1 - 6.0, RACK_ZS[0] - 0.4, BODY_Z1 + 1)
-    blk -= Pos(WORM_X, (y0 + y1) / 2, WORM_Z) * Rot(90, 0, 0) * Cylinder(WORM_R + MOD + 0.3, y1 - y0 - 12.0)
-    blk -= Pos(WORM_X, y0 + 6.0 - WORM_PIN[1] / 2 - 0.3, WORM_Z) * Rot(90, 0, 0) * Cylinder(WORM_PIN[0] / 2 + 0.15, WORM_PIN[1] + 0.6)
-    blk -= Pos(WORM_X, y1 - 3.0, WORM_Z) * Rot(90, 0, 0) * Cylinder(SHAFT_D / 2 + PIN_BORE_C, 6.2)
-    # the rack slice rides in from the top: the channel is open at the upper end above the bearing
-    blk -= box_at(RACK_X[0] - 0.5, RACK_X[1] + 0.4, y1 - 6.5, y1 + 1, RACK_ZS[0] - 0.4, BODY_Z1 + 1) - \
-        (Pos(WORM_X, y1 - 3.0, WORM_Z) * Rot(90, 0, 0) * Cylinder(SHAFT_D / 2 + 2.0, 7))
+    blk -= box_at(RACK_CH[0], RACK_CH[1], y0 - 1, WRACK[1] + RISE + 0.5, RACK_CH[2], BODY_Z1 + 1)   # the slice goes in from below
+    blk -= rise_cuts(y0)
     return sfillet(blk, blk.edges().filter_by(Axis.Y), 1.0)
+
+
+def rig_plug():
+    """The rig's bottom plug: the worm's pin seat, like the camera's."""
+    return worm_seat(RIG_Y[0], RIG_Y[0] + 6.0, _channel(RIG_Y[0] - 1, RIG_Y[1], PRESS_FIT / 2))
 
 
 def rack_slice():
     """Test rig, assembly coordinates: four teeth of the Y plate's rise rack on a slice of the plate, with
     two rails as high as the gap that ride on the block's face. It prints like the Y plate, plate down."""
-    ya = 36.0
+    ya = WORM_Y0 + (RIG_N + 3) * WORM_LEAD
     yb = ya + 4 * WORM_LEAD
     part = rise_rack(ya, yb) + box_at(-85.0, -60.0, ya - 8, yb + 8, YP_Z0 - 0.01, YP_Z0 + 3.0)
     for x0, x1 in ((-85.0, -82.0), (-63.0, -60.0)):

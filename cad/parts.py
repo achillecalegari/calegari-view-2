@@ -98,7 +98,7 @@ FLEX_SIDE_Y = 1          # the +X groove of the body is the flexure
 FLEX_SIDE_X = -1         # the bottom groove of the Y plate is the flexure
 
 VELVET_T = GAP                          # self-adhesive velvet, about 1 mm, pressed into the 0.8 mm gap
-V1_X, V1_Y = 48.0, (-H - PLINTH + 9.0, H - 0.3)    # body velvet: inside the ways, over the plinth too
+V1_X, V1_Y = 48.0, (-H + 0.3, H - 0.3)            # body velvet: inside the ways, the body's full height
 V2_X, V2_Y = YP_HALF - 1.0, 48.0                   # Y plate velvet: inside the horizontal ways
 
 
@@ -165,13 +165,14 @@ LIP_RELIEF_X, LIP_RELIEF_Y, LIP_RELIEF_D = 44.0, (51.0, 64.0), 2.2
 GATE_W, GATE_H = 78.0, 60.0
 BLADE_TRAVEL, BLADE_Y0, BLADE_W, BLADE_T = 4.5, 40.6, 16.2, 2.2
 TONGUE_X = (-26.0, 26.0)
-WHEEL_XY = (0.0, 48.0)
-STUD_D, STUD_L = 8.0, 7.5
+WHEEL_XY = (0.0, 47.0)                   # the blade's slot must stay inside the blade: 1.9 mm above, 3 below
+STUD_D, STUD_L = 6.0, 7.5
+STUD_PITCH = 1.0
 ROT_FLOOR = ROT_Z1 + 0.2                 # the body's floor: the springs push the rotator 0.2 back onto the lugs
 GAP_ROT = ROT_FLOOR - ROT_Z1
 LAB_R = (69.8, 71.6)                     # labyrinth rib on the body floor, groove in the rotator
 STOP_PEG = dict(ang=0.0, z=5.2, d=3.0, r0=ROT_R - 1.1)   # radial peg through the body's side, into the rotator's arc groove
-HANDLE_Z0 = 2.0                          # the handle stands 2 mm off the back: the dark slide's grip passes under it in portrait
+HANDLE_Z0 = 10.0                         # the handle stands off the back: z 10..22, the dark slide's grip passes under it
 
 
 def msector(r0, r1, a0, a1, z0, z1):
@@ -202,17 +203,17 @@ def name_plate():
 
 
 def body_part():
-    # one front block: body, plinth and handle share the front face; the plinth goes deeper behind
-    y0, y1 = -H - PLINTH, H + HANDLE_H
+    # one front block: body and handle share the front face; the foot is an Arca dovetail, set back
+    y0, y1 = -H, H + HANDLE_H
     b = extrude(Pos(0, (y0 + y1) / 2, BODY_Z0) * RectangleRounded(BODY, y1 - y0, CORNER_R), amount=BODY_Z1 - BODY_Z0)
     b -= Pos(0, (H + y1 - HANDLE_BAR) / 2, BODY_Z0 - 1) * extrude(
         RectangleRounded(BODY - 2 * HANDLE_POST, y1 - HANDLE_BAR - H, 4.0), amount=BODY_Z1 - BODY_Z0 + 2)
     b -= box_at(-H + HANDLE_POST + 4.0, H - HANDLE_POST - 4.0, H - 0.5, H + 4.0, BODY_Z0 - 1, BODY_Z1 + 1)
     b -= box_at(-H - 1, H + 1, H + 0.01, y1 + 1, BODY_Z0 - 1, HANDLE_Z0)          # the handle stands off the back
-    foot = extrude(Pos(0, (y0 - H) / 2, L_Z0) * RectangleRounded(BODY, PLINTH, 4.0), amount=BODY_Z1 - L_Z0)
-    b += foot
     b = sfillet(b, b.edges().filter_by(Plane.XY), EDGE)
-    b += arca_rail(Plane(origin=(0, -H - PLINTH, ARCA_ZC), x_dir=(0, 0, 1), z_dir=(1, 0, 0)))
+    foot = arca_rail(Plane(origin=(0, -H, ARCA_ZC), x_dir=(0, 0, 1), z_dir=(1, 0, 0)))
+    foot = sfillet(foot, foot.edges().filter_by(Axis.Z), 2.0)
+    b += foot
 
     # the rotator's recess, its two lugs (45 degree cones), the floor's labyrinth rib
     b -= cyl_z(ROT_R + ROT_C, BODY_Z0 - 1, ROT_FLOOR)
@@ -242,16 +243,14 @@ def body_part():
     # vertical ways: two grooves, open at the bottom of the plinth, closed at the top
     y_top = Y_TONGUE[1] + RISE
     for sd in (-1, 1):
-        b -= prism_y(M.groove_profile(sd == FLEX_SIDE_Y), sd, BODY_Z1, -H - PLINTH - 1, y_top)
+        b -= prism_y(M.groove_profile(sd == FLEX_SIDE_Y), sd, BODY_Z1, -H - 1, y_top)
         if sd == FLEX_SIDE_Y:
-            b -= prism_y(M.flex_slit(), sd, BODY_Z1, -H - PLINTH + 6.0, y_top - 4.0)
-    # rise worm: a trough in the body and the left handle post, a channel for the Y plate's rack (open at
-    # the bottom: the plate goes in from below), the bottom pin's hole and the top bearing in the bar
-    b -= box_at(M.RACK_X[0] - 0.5, M.RACK_X[1] + 0.4, -H - PLINTH - 1, M.WORM_Y1, M.RACK_ZS[0] - 0.4, BODY_Z1 + 1)
-    y_tr = M.WORM_Y1 + M.WORM_PIN[1] + 1.0          # the worm goes in lifted by its pin's length: room above the thread
-    b -= Pos(WORM_X, (M.WORM_Y0 - 0.5 + y_tr) / 2, WORM_Z) * Rot(90, 0, 0) * Cylinder(M.WORM_R + MOD + 0.3, y_tr - M.WORM_Y0 + 0.5)
-    b -= Pos(WORM_X, M.WORM_Y0 - M.WORM_PIN[1] / 2 - 0.3, WORM_Z) * Rot(90, 0, 0) * Cylinder(M.WORM_PIN[0] / 2 + 0.15, M.WORM_PIN[1] + 0.6)
-    b -= Pos(WORM_X, (M.WORM_Y1 + y1) / 2 + 0.5, WORM_Z) * Rot(90, 0, 0) * Cylinder(SHAFT_D / 2 + PIN_BORE_C, y1 - M.WORM_Y1 + 2)
+            b -= prism_y(M.flex_slit(), sd, BODY_Z1, -H + 6.0, y_top - 4.0)
+    # rise drive: the worm's bore straight up from the bottom face (the worm goes in from below after the
+    # Y plate), the side bore for the knob's gear and its collar, and the channel for the Y plate's rack,
+    # open at the bottom (the plate goes in from below); one plug closes the bore and the channel
+    b -= box_at(M.RACK_CH[0], M.RACK_CH[1], -H - 1, WRACK[1] + RISE + 0.5, M.RACK_CH[2], BODY_Z1 + 1)
+    b -= M.rise_cuts(-H)
     b -= dimple(RISE_DETENT, BODY_Z1, -1)
     # rise index (red dot) on the right side face, by the Y plate's scale
     b -= Pos(-H, 0.0, BODY_Z1 - 2.2) * dot(2.4, 0.6, "-x")
@@ -300,7 +299,7 @@ def rotator(rho=0.0):
     wx, wy = WHEEL_XY
     g += cyl_z(STUD_D / 2 - 0.7, z0 - STUD_L, z0 + 0.01, wx, wy)
     if IsoThread is not None:
-        g += Pos(wx, wy, z0 - STUD_L + 0.4) * IsoThread(major_diameter=STUD_D - 0.2, pitch=1.25, length=STUD_L - 0.9,
+        g += Pos(wx, wy, z0 - STUD_L + 0.4) * IsoThread(major_diameter=STUD_D - 0.2, pitch=STUD_PITCH, length=STUD_L - 0.9,
                                                         external=True, end_finishes=("fade", "square"))
     # front face: the labyrinth groove, a dimple for each spring at both positions
     g -= cyl_z(LAB_R[1] + 0.3, z1 - 0.5, z1 + 1) - cyl_z(LAB_R[0] - 0.3, z1 - 1, z1 + 2)
@@ -334,7 +333,7 @@ def graflok_blade(locked=True, rho=0.0):
         tng = make_face(Polyline((tx - 7, y0 + BLADE_W - 0.01), (tx + 7, y0 + BLADE_W - 0.01),
                                  (tx + 5.5, y0 + BLADE_W + 3.9), (tx - 5.5, y0 + BLADE_W + 3.9), close=True))
         blade += Pos(0, 0, z0) * extrude(tng, amount=BLADE_T)
-    blade -= Pos(WHEEL_XY[0], WHEEL_XY[1] + BLADE_TRAVEL / 2, z0 - 1) * extrude(SlotCenterToCenter(BLADE_TRAVEL + 0.4, STUD_D + 0.6, rotation=90), amount=5)
+    blade -= Pos(WHEEL_XY[0], WHEEL_XY[1] + BLADE_TRAVEL / 2, z0 - 1) * extrude(SlotCenterToCenter(BLADE_TRAVEL + 0.4, STUD_D + 0.4, rotation=90), amount=5)
     zf = GF_Z0
     for s in (-1, 1):
         cut = make_face(Polyline((s * 42.45, y0 - 1, zf - 0.95), (s * 43.5, y0 - 1, zf - 0.95), (s * 43.5, y0 - 1, z0 - 0.01),
@@ -351,7 +350,7 @@ def graflok_wheel(rho=0.0):
         w -= Rot(0, 0, i * 15) * Pos(8.3, 0, (z0 + z1) / 2) * Cylinder(0.7, 6)
     w -= cyl_z((STUD_D + 0.3) / 2, z0 - 1, z1 + 1)
     if IsoThread is not None:
-        w += Pos(0, 0, z0) * IsoThread(major_diameter=STUD_D + 0.3, pitch=1.25, length=5.0, external=False, end_finishes=("fade", "fade"))
+        w += Pos(0, 0, z0) * IsoThread(major_diameter=STUD_D + 0.3, pitch=STUD_PITCH, length=5.0, external=False, end_finishes=("fade", "fade"))
     w = schamfer(w, w.edges().filter_by(GeomType.CIRCLE).group_by(Axis.Z)[0], 0.5)
     return Rot(0, 0, rho) * Pos(*WHEEL_XY, 0) * w
 
@@ -456,7 +455,7 @@ def plug_profile():
 
 def way_plug_y(side):
     """Plug pressed into the bottom end of a vertical groove: stops the fall, keeps the plate in."""
-    return prism_y(plug_profile(), side, BODY_Z1, -H - PLINTH - 0.01, Y_TONGUE[0] - FALL)
+    return prism_y(plug_profile(), side, BODY_Z1, -H - 0.01, Y_TONGUE[0] - FALL)
 
 
 def way_plug_x(side):

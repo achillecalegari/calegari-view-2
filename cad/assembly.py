@@ -23,7 +23,7 @@ EXPLODE = {"body": (0, 0, 0), "graflok": (0, 0, -1.2), "blade": (0, 0, -1.7), "b
            "y": (0, 0, 0.9), "y_drive": (-0.8, 0, 0.3), "y_rack": (0, 0, 0.55), "seal_b": (0, 0, 0.45),
            "x": (0, 0, 1.8), "x_drive": (0, 0.8, 1.8), "x_rack": (0, 0, 1.35), "seal_y": (0, 0, 1.2),
            "heli": (0, 0, 2.4), "mount": (0, 0, 3.0), "board": (0, 0, 3.6), "lens": (0, 0, 4.3),
-           "plug_y": (0, -0.8, 0), "plug_x": (-0.8, 0, 0.9)}
+           "plug_y": (0, -0.8, 0), "rise_knob": (-0.9, 0, 0), "plug_x": (-0.8, 0, 0.9)}
 
 
 def shift_shaft():
@@ -52,15 +52,22 @@ def assemble(sx=0.0, sy=0.0, E=0.0, back=True, blade_locked=True, thread=False, 
         add("rb_back", bk, "leather", "back", False)
         add("rb_lever", lev, "chrome", "back", False)
 
-    # rise: the worm in the body turns as the Y plate's rack goes by (clockwise from above raises)
+    # rise: the worm in the body turns as the Y plate's rack goes by; the knob on the right side face turns
+    # it through the miter pair (clockwise, facing the knob, raises the plate)
     kn = M.knob()
     kdot = Pos(0, -(KNOB_D / 2 - 4.2), 0) * Cylinder(1.2, 0.6, align=(Align.CENTER, Align.CENTER, Align.MIN))
     th = -sy / M.WORM_LEAD * 360.0
     add("worm", M.worm_place(th) * M.worm_part(), "body_black", "worm")
-    K = Pos(WORM_X, M.WORM_TOP + KNOB_OFF + KNOB_H, WORM_Z) * Rot(0, th, 0) * Rot(90, 0, 0)
-    add("knob_rise", K * kn, "body_black", "worm")
-    add("dot_knob_rise", K * kdot, "red", "worm", False)
-    add("washer_rise", Pos(WORM_X, M.WORM_TOP, WORM_Z) * orient(M.drag_washer(), "+y"), "rubber", "worm")
+    G = M.knob_gear_place(th)
+    side = (WORM_X - M.BEVEL_R) + H
+    up = Pos(0, 0, side + KNOB_OFF + KNOB_H) * Rot(180, 0, 0)
+    add("gear_rise", G * M.knob_gear(), "body_black", "rise_knob")
+    add("knob_rise", G * up * kn, "body_black", "rise_knob")
+    add("dot_knob_rise", G * up * kdot, "red", "rise_knob", False)
+    add("collar_rise", Pos(-H, M.BEVEL_Y, WORM_Z) * orient(M.collar(), "+x"), "body_black", "rise_knob")
+    add("washer_rise", Pos(-H, M.BEVEL_Y, WORM_Z) * orient(M.drag_washer(), "-x"), "rubber", "rise_knob")
+    add("plug_worm", M.worm_plug(), "body_black", "plug_y")
+    add("plug_rack", M.rack_plug(), "body_black", "plug_y")
 
     def drive(T, shaft):
         up = Pos(0, 0, PIN_W + shaft - M.KNOB_BORE + KNOB_H) * Rot(180, 0, 0)

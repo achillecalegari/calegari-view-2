@@ -17,7 +17,8 @@ OUT = pathlib.Path(__file__).resolve().parent.parent / "out" / "figs"
 
 G = {
     "body": ["body"], "rot": ["rotator"], "peg": ["stop_peg"], "blade": ["graflok_blade"], "wheel": ["graflok_wheel"],
-    "worm": ["worm"], "washer_r": ["washer_rise"], "knob_r": ["knob_rise", "dot_knob_rise"],
+    "worm": ["worm"], "gear_r": ["gear_rise"], "collar_r": ["collar_rise"], "washer_r": ["washer_rise"],
+    "knob_r": ["knob_rise", "dot_knob_rise"], "plug_w": ["plug_worm"], "plug_rk": ["plug_rack"],
     "v1": ["velvet_body"], "y": ["y_plate"], "rack_s": ["rack_shift"], "v2": ["velvet_yplate"],
     "plug_y": ["plug_y"], "panel": ["lens_panel"], "pin_s": ["pinion_shift"], "plug_x": ["plug_x"],
     "washer_s": ["washer_shift"], "knob_s": ["knob_shift", "dot_knob_shift"], "heli": ["helicoid"], "mount": ["mount"],
@@ -29,11 +30,11 @@ def g(*keys):
     return [p for k in keys for p in G[k]]
 
 
-C1 = g("body", "worm", "washer_r", "knob_r")
+C1 = g("body", "gear_r", "collar_r", "washer_r", "knob_r")
 C2 = C1 + g("rot", "peg", "blade", "wheel")
 C3 = C2 + g("v1")
 YP = g("y", "rack_s", "v2")
-C5 = C3 + YP + g("plug_y")
+C5 = C3 + YP + g("worm", "plug_w", "plug_y", "plug_rk")
 C7 = C5 + g("panel", "pin_s", "plug_x", "washer_s", "knob_s")
 C8 = C7 + g("heli", "mount")
 
@@ -56,7 +57,6 @@ def fig(name, title, view, show, new=(), labels=(), lines=(), state=None, doc="a
 
 
 import mech as M
-TOP = M.WORM_TOP
 WX, WZ = WORM_X, WORM_Z
 
 # ------------------------------------------------------------------ 1 body and rise worm
@@ -65,12 +65,12 @@ fig("1a_body", "1a  The body: what to check", V_OB_R, g("body"),
             ("B", [P.mpolar(ROT_R, a) + (1.0,) for a in LUG_ANG]),
             ("C", [(H, 0.0, P.STOP_PEG["z"])]),
             ("D", [P.mpolar(P.LAB_R[1], 200.0) + (P.ROT_FLOOR - 0.4,)])], dist=4.4)
-fig("1b_worm", "1b  The rise worm", V_RIGHT, g("body"),
-    new=[(g("worm"), (0, 0, 40))],
-    labels=[("A", "worm"), ("B", [(WX, M.WORM_Y0 - 3.0, WZ)]), ("C", [(WX, TOP, WZ)])], dist=4.4)
-fig("1c_rise_knob", "1c  Washer and knob on top of the handle", V_TOPL, g("body", "worm"),
-    new=[(g("washer_r"), (0, 20, 0)), (g("knob_r"), (0, 45, 0), ["knob_rise"])],
-    labels=[("D", "washer_rise"), ("E", "knob_rise")], dist=4.2)
+fig("1b_rise_gear", "1b  The knob's gear and the collar, into the right side", V_RIGHT, g("body"),
+    new=[(g("gear_r"), (-45, 0, 0)), (g("collar_r"), (-22, 0, 0))],
+    labels=[("A", "gear_rise"), ("B", "collar_rise")], dist=4.4)
+fig("1c_rise_knob", "1c  Washer and rise knob", V_RIGHT, g("body", "gear_r", "collar_r"),
+    new=[(g("washer_r"), (-14, 0, 0)), (g("knob_r"), (-32, 0, 0), ["knob_rise"])],
+    labels=[("C", "washer_rise"), ("D", "knob_rise")], dist=4.4)
 
 # ------------------------------------------------------------------ 2 rotating back
 fig("2a_rotator_in", "2a  The rotator goes in turned 135 degrees", V_OB_R, C1, state=dict(rho=ROT_ENTRY),
@@ -97,11 +97,14 @@ fig("4c_velvet_v2", "4c  Velvet V2", V_OB_F, g("y", "rack_s"),
     new=[(g("v2"), (0, 0, 35))], labels=[("V2", "velvet_yplate")], dist=4.0)
 
 # ------------------------------------------------------------------ 5 Y plate into the body
-fig("5a_y_in", "5a  Up into the body from below", V_34, C3,
-    new=[(YP, (0, -150, 0), ["y_plate"])], labels=[("A", "y_plate"), ("B", "knob_rise")],
+fig("5a_worm", "5a  The rise worm and its plug, up from below", V_BELOW, C3,
+    new=[(g("worm"), (0, -125, 0)), (g("plug_w"), (0, -200, 0))],
+    labels=[("A", "worm"), ("B", "plug_worm"), ("C", [(WX, M.BEVEL_Y, WZ)])], dist=6.0)
+fig("5b_y_in", "5b  The Y plate, up from below", V_34, C3 + g("worm", "plug_w"),
+    new=[(YP, (0, -150, 0), ["y_plate"])], labels=[("D", "y_plate"), ("E", "knob_rise")],
     lines=[dict(points=[(-H - 25, -215, 40), (-H - 25, -120, 40)], style="arrow")], dist=5.6)
-fig("5b_plugs_y", "5b  Two plugs under the plinth", V_BELOW, C3 + YP, state=dict(sy=30.0),
-    new=[(g("plug_y"), (0, -35, 0))], labels=[("C", "plug_y")], dist=4.6)
+fig("5c_plugs", "5c  Three plugs in the bottom face", V_BELOW, C3 + YP + g("worm", "plug_w"), state=dict(sy=30.0),
+    new=[(g("plug_y"), (0, -35, 0)), (g("plug_rk"), (0, -35, 0))], labels=[("F", "plug_y"), ("G", "plug_rack")], dist=4.6)
 
 # ------------------------------------------------------------------ 6 lens panel on the bench
 fig("6_shift_pinion", "6  Shift pinion into the lens panel", V_REAR, g("panel"),

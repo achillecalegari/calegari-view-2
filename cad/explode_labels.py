@@ -10,8 +10,8 @@ def corner(n, fx, fy, face="max"):
 def centre(n):
     c = it[n].center(); return (c.X, c.Y, c.Z)
 labels = [
-    ("<Body, plinth and handle: one print", corner("body", 0.25, 0.97)),
-    ("<Rise worm and knob, self-locking", centre("knob_rise")),
+    ("<Body, handle and Arca foot: one print", corner("body", 0.25, 0.97)),
+    ("<Rise knob, miter pair and worm, self-locking", centre("knob_rise")),
     ("<Rotator: the back turns and clicks", corner("rotator", 0.1, 0.8, "min")),
     ("<Blade and printed wheel", centre("graflok_wheel")),
     (">Y plate, flexure ways, moulded rise rack", corner("y_plate", 0.95, 0.95)),

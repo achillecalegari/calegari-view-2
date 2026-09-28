@@ -10,7 +10,7 @@ Most of the calibration happens before the camera exists, on the [test prints](t
 2. With a bright torch, sweep slowly along every joint between the body, the Y plate and the lens panel, from all sides.
 3. Repeat with the plates at the four corners of their travel (rise and shift both at 30 mm), and with the back turned to portrait.
 
-The ground glass must stay black. A glow between the plates means the velvet has a gap or lifts at an edge: press it down, or cut a new piece from the template. The narrowest band of velvet between the plates is 6.4 mm at the worst position (`cad/seal_check.py`), so a gap is always a velvet problem, not a geometry one. A glow at the back, around the rotator, means the rotator does not sit flat on its lugs: look for stringing under the lugs and on the ring rib of the recess floor.
+The ground glass must stay black. A glow between the plates means the velvet has a gap or lifts at an edge: press it down, or cut a new piece from the template. The narrowest band of velvet between the plates is 6.1 mm at the worst position (`cad/seal_check.py`), so a gap is always a velvet problem, not a geometry one. A glow at the back, around the rotator, means the rotator does not sit flat on its lugs: look for stringing under the lugs and on the ring rib of the recess floor.
 
 ## 2. Infinity
 
@@ -48,7 +48,7 @@ Then check infinity as above. The engraved distance scale is drawn for 65 mm; wi
 | A plate rocks | the way is loose | `WAY_INTERF` +0.05, same part |
 | The rise knob is stiff | the worm is tight in its rack | `WORM_BL` +0.05 and reprint the worm (the rack stays) |
 | The rise ever creeps down under a heavy lens | the worm or its rack is lubricated | clean both with alcohol: the dry friction is what locks it (see [design notes](design.md)) |
-| The shift knob is too free or too stiff | the wave washer | reprint the pinion with `KNOB_OFF` -0.1 (stiffer) or +0.1 (freer) |
+| A knob is too free or too stiff | the wave washer | reprint its shaft (the shift pinion, or the rise knob's gear) with `KNOB_OFF` -0.1 (stiffer) or +0.1 (freer) |
 | A click at zero, or the back's click, is faint or hard | the spring | `DET_T` in `cad/parts.py`: +0.2 harder, -0.2 softer (it sets all five springs) |
 | The back turns stiffly or rocks | the rotator on its lugs | the clearance of the lugs' cone, `rot_cone(0.08)` in `cad/parts.py`: +0.05 freer, -0.05 firmer; reprint the body |
 
