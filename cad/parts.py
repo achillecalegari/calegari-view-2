@@ -240,7 +240,7 @@ def body_part():
         hz = opening_body(z)
         b -= box_at(-hz[0] - 1.6, hz[0] + 1.6, -hz[1] - 1.6, hz[1] + 1.6, z, z + 2.0)
 
-    # vertical ways: two grooves, open at the bottom of the plinth, closed at the top
+    # vertical ways: two grooves, open at the body's bottom, closed at the top
     y_top = Y_TONGUE[1] + RISE
     for sd in (-1, 1):
         b -= prism_y(M.groove_profile(sd == FLEX_SIDE_Y), sd, BODY_Z1, -H - 1, y_top)

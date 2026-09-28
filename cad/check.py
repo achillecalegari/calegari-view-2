@@ -26,7 +26,7 @@ BUDGET = {  # (prefix a, prefix b): max overlap in mm3, and why
     ("rb_", "graflok_"): (9999, "the blade clamps the back: envelope"),
     ("rb_", "rotator"): (9999, "the RB67 envelope has no Graflok lips or slots (proved on the real back)"),
     ("rb_", "rb_"): (9999, "the back's own parts"),
-    ("graflok_wheel", "rotator"): (25, "printed M8 threads engaged"),
+    ("graflok_wheel", "rotator"): (25, "printed M6 threads engaged"),
     ("dot", ""): (1e9, "paint fills of the dots: render only"),
 }
 

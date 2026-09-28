@@ -130,7 +130,7 @@ ROT_ENTRY = 135.0                      # insertion angle; portrait is -90, lands
 ROT_SPRINGS = (30.0, 150.0, 210.0)
 ROT_SPRING_R = 75.5
 # ------------------------------------------------------------------ travel stops
-# Y plate: in from the bottom through the plinth; the groove's closed top end stops the rise, a printed
+# Y plate: in from the bottom of the body; the groove's closed top end stops the rise, a printed
 # plug pressed into the groove's bottom end stops the fall. Lens panel: in from the photographer's
 # right (-X); the closed +X end stops it, a plug the other way.
 STOP_WALL = 3.0

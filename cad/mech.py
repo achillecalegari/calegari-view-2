@@ -481,7 +481,7 @@ def arca_profile():
 
 
 def arca_coupon(length=50.0):
-    """50 mm of the camera's printed Arca rail on a slice of the plinth, printed as on the body."""
+    """50 mm of the camera's printed Arca rail on a slice of the body's bottom, printed as on the body."""
     base = box_at(-24, 24, -length / 2, length / 2, 0, 8.0)
     rail = extrude(Plane.XZ * poly_face([(u, 8.0 + v) for u, v in arca_profile()]), amount=length / 2, both=True)
     return base + rail

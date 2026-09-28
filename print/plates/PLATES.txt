@@ -10,10 +10,10 @@ body               x1  black      180.0 x  231.0 x  51.0  front face down: groov
 y_plate            x1  black      177.0 x  177.0 x  21.2  front face down: tongues, rack slot and detent spring on top
 lens_panel         x1  black012   180.0 x  180.0 x  20.4  front face down: engraved scale on the bed, M65 thread at 0.12 mm
 lens_mount         x1  black012    78.0 x   78.0 x  10.5  stub down: M65 thread at 0.12 mm
-rotator            x1  black      159.9 x  160.0 x  16.4  front face down: the seat, the rails and the M8 stud on top
+rotator            x1  black      159.9 x  160.0 x  16.4  front face down: the seat, the rails and the M6 stud on top
 rise_worm          x1  black012    10.0 x   10.0 x  83.9  standing: pin down, the miter gear on top
 stop_peg           x1  black        3.0 x    3.0 x  11.0  standing
-graflok_wheel      x1  black       16.0 x   16.0 x   5.0  M8 thread axis vertical
+graflok_wheel      x1  black       16.0 x   16.0 x   5.0  M6 thread axis vertical
 lens_board         x1  black       70.0 x   70.0 x   3.0  rear face down
 pinion_shift       x1  black012    14.6 x   14.6 x  38.5  teeth on the bed: exact involutes
 knob               x2  black       20.0 x   20.0 x  15.0  crown down: the knurl's ribs are drawn in the bed plane

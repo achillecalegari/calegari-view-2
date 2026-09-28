@@ -22,7 +22,7 @@ Every part is already oriented. The rule behind the orientations: whatever touch
 | Walls | 5 on the body, Y plate, lens panel and rotator; 4 elsewhere |
 | Infill | 30 % gyroid; 100 % for the worm, the knob's gear, the pinion, the rack, the knobs, the collar, the board, the mount, the plugs and the peg |
 | Supports | none |
-| Brim | ears on the body, Y plate, lens panel and rotator corners; a 5 mm brim around the worm (it is 84 mm tall and 10 wide) |
+| Brim | ears on the body, Y plate, lens panel and rotator corners; a 5 mm brim around the worm (84 mm tall, 10 wide), the rise knob's gear and the two long plugs |
 
 The wave washers bridge over their own three feet (half a millimetre, 8 mm spans): no supports, a little sag does no harm.
 

@@ -25,7 +25,7 @@ A rigid 6x7 view camera for architecture that you print at home and put together
 | Handle | full width, posts and bar the same 16 mm, engraved name; the shift knob centred in its window |
 | Light seal | self-adhesive velvet between the sliding plates, at least 6.1 mm wide at every position; a ring labyrinth behind the rotator |
 | Size | 180 x 222 mm front (197 mm wide with the rise knob), 161 mm deep with back and lens |
-| Weight | about 0.9 kg without back and lens (estimate from the model) |
+| Weight | about 1 kg without back and lens, helicoid included (estimate from the model) |
 | Bought | the helicoid and a sheet of velvet: 40 to 70 EUR, plus ASA and a little TPU |
 
 ![Rise and shift](docs/img/06_movements.jpg)
