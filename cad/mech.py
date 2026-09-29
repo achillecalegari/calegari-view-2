@@ -261,7 +261,7 @@ def worm_thread(length, bl):
     return core + th
 
 
-def miter():
+def miter(journal=True):
     """Straight miter gear: heel pitch circle at z = 0, the teeth ruled toward the apex at z = BEVEL_R and
     ending on the back cone (45 degrees, through the heel's pitch circle), as on a real bevel gear: behind
     it only the core, inside the mating gear's reach. The core narrows along the back cone to BEVEL_BACK,
@@ -273,8 +273,9 @@ def miter():
     toe = Plane.XY.offset(R * (1 - k)) * poly_face([(x * k, y * k) for x, y in pts])
     g = loft([heel, toe], ruled=True)
     g &= Pos(0, 0, -R) * Cone(0.01, 2 * R, 2 * R, align=Z_UP)                  # r <= R + z: the back cone
-    rj = WORM_BORE - 0.3
-    g += Pos(0, 0, -L0 - (rj - (R - L0))) * Cone(rj, R - L0, rj - (R - L0) + 0.01, align=Z_UP)
+    if journal:
+        rj = WORM_BORE - 0.3
+        g += Pos(0, 0, -L0 - (rj - (R - L0))) * Cone(rj, R - L0, rj - (R - L0) + 0.01, align=Z_UP)
     return g
 
 
@@ -287,9 +288,8 @@ def worm_part(y0=WORM_Y0, y1=WORM_Y1):
     w = cyl_z(pd / 2, 0, pl + 0.01)
     w += Pos(0, 0, pl) * worm_thread(y1 - y0, WORM_BL)
     zh = y1 + BEVEL_J - base
-    zb = zh - BEVEL_BACK - (WORM_BORE - 0.3 - (BEVEL_R - BEVEL_BACK))
-    w += cyl_z(WORM_BORE - 0.3, y1 - base - 0.01, zb + 0.01)
-    w += Pos(0, 0, zh) * miter()
+    w += cyl_z(BEVEL_R - BEVEL_BACK, y1 - base - 0.01, zh - BEVEL_BACK + 0.01)   # the neck: no ledge to print over
+    w += Pos(0, 0, zh) * miter(journal=False)
     zt = zh + BEVEL_R * (1 - BEVEL_K)
     w += cyl_z(1.4, zt - 0.01, zh + BEVEL_R - 1.5)
     return schamfer(w, w.edges().filter_by(GeomType.CIRCLE).group_by(Axis.Z)[0], 0.3)
@@ -302,7 +302,10 @@ def knob_gear():
     side = (WORM_X - BEVEL_R) - (-H)                      # heel to the side face
     g = Rot(180, 0, 0) * (miter() + cyl_z(1.2, BEVEL_R * (1 - BEVEL_K) - 0.01, BEVEL_R + 1.5))
     zb = BEVEL_BACK + (WORM_BORE - 0.3 - (BEVEL_R - BEVEL_BACK))
-    j = cyl_z(WORM_BORE - 0.3, zb - 0.01, side - COLLAR_L - 0.2)
+    rj, ze = WORM_BORE - 0.3, side - COLLAR_L - 0.2
+    ch = rj - SHAFT_D / 2                                  # the journal's outer end: a 45 degree cone down to the shaft,
+    j = cyl_z(rj, zb - 0.01, ze - ch + 0.01)               # so it prints shaft down with no ledge; it meets the collar's edge
+    j += Pos(0, 0, ze - ch) * Cone(rj, SHAFT_D / 2, ch, align=Z_UP)
     top = side + KNOB_OFF + KNOB_BORE
     s = knob_end(cyl_z(SHAFT_D / 2, side - COLLAR_L - 0.21, top), top)
     return g + j + s

@@ -75,7 +75,7 @@ def asa_parts():
         ("knob_b", placed(mesh(M.knob()))),
         ("rack_62", placed(mesh(M.rack(62.0), 0.01))),
         ("pinion_block", placed(mesh(M.pinion_block()))),
-        ("rack_carrier", placed(mesh(M.rack_carrier()))),
+        ("rack_carrier", placed(mesh(M.rack_carrier()), FLIP)),
         ("worm_short", placed(mesh(M.test_worm(), 0.01))),
         ("worm_block", placed(mesh(M.worm_block()), FLIP)),
         ("worm_rig_plug", placed(mesh(M.rig_plug()), UP)),

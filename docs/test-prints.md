@@ -13,7 +13,7 @@ Print these before anything else. They are the real mechanisms of View 2, or exa
 | `plate_00c_test_ways_arca` | ASA | dovetail grooves and tongues (rigid and flexure), a slice of the Arca dovetail |
 | `plate_00d_test_tpu` | TPU 95A | two wave washers (external spool, not the AMS) |
 
-Settings as for the camera ([printing](printing.md)): 0.12 mm layers for the thread ring, the mount, the pinion, the worm and the knob's gear, 0.16 mm for the rest, 100 % infill for the small parts.
+Settings as for the camera ([printing](printing.md)), supports under the lens mount's ring only: 0.12 mm layers for the thread ring, the mount, the pinion, the worm and the knob's gear, 0.16 mm for the rest, 100 % infill for the small parts.
 
 ## Shrinkage first
 

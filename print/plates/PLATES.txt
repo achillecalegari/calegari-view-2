@@ -1,7 +1,7 @@
 plate_01_black.3mf: body, knob_1, knob_2, stop_peg
 plate_02_black.3mf: y_plate, rack_shift, graflok_wheel, plug_rack, rise_collar, plug_worm, plug_y_left, plug_y_right, plug_x_top, plug_x_bottom
 plate_03_black.3mf: rotator, lens_board
-plate_04_black_0.12mm_layers.3mf: lens_panel, pinion_shift, rise_worm, rise_knob_gear
+plate_04_black_0.12mm_layers.3mf: lens_panel, pinion_shift, rise_knob_gear, rise_worm
 plate_05_black_0.12mm_layers.3mf: lens_mount
 plate_06_red.3mf: graflok_blade
 plate_07_tpu.3mf: drag_washer_1, drag_washer_2
@@ -9,7 +9,7 @@ plate_07_tpu.3mf: drag_washer_1, drag_washer_2
 body               x1  black      180.0 x  231.0 x  51.0  front face down: grooves, pockets and the engraved name on the bed
 y_plate            x1  black      177.0 x  177.0 x  21.2  front face down: tongues, rack slot and detent spring on top
 lens_panel         x1  black012   180.0 x  180.0 x  20.4  front face down: engraved scale on the bed, M65 thread at 0.12 mm
-lens_mount         x1  black012    78.0 x   78.0 x  10.5  stub down: M65 thread at 0.12 mm
+lens_mount         x1  black012    78.0 x   78.0 x  10.5  stub down: M65 thread at 0.12 mm; supports under the ring only (build plate only)
 rotator            x1  black      159.9 x  160.0 x  16.4  front face down: the seat, the rails and the M6 stud on top
 rise_worm          x1  black012    10.0 x   10.0 x  83.9  standing: pin down, the miter gear on top
 stop_peg           x1  black        3.0 x    3.0 x  11.0  standing

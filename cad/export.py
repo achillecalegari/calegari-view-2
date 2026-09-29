@@ -41,7 +41,7 @@ def catalogue():
         ("body", P.body_part(), FLIP, 1, "black", "front face down: grooves, pockets and the engraved name on the bed"),
         ("y_plate", P.y_plate(), FLIP, 1, "black", "front face down: tongues, rack slot and detent spring on top"),
         ("lens_panel", P.lens_panel(thread=True), FLIP, 1, "black012", "front face down: engraved scale on the bed, M65 thread at 0.12 mm"),
-        ("lens_mount", M.mount(thread=True), EYE, 1, "black012", "stub down: M65 thread at 0.12 mm"),
+        ("lens_mount", M.mount(thread=True), EYE, 1, "black012", "stub down: M65 thread at 0.12 mm; supports under the ring only (build plate only)"),
         ("rotator", P.rotator(), FLIP, 1, "black", "front face down: the seat, the rails and the M6 stud on top"),
         ("rise_worm", M.worm_part(), EYE, 1, "black012", "standing: pin down, the miter gear on top"),
         ("stop_peg", Rot(0, -90, 0) * P.stop_peg(), EYE, 1, "black", "standing"),

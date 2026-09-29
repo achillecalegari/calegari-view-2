@@ -21,7 +21,7 @@ Every part is already oriented. The rule behind the orientations: whatever touch
 | Layers | 0.16 mm; 0.12 mm on the two plates that say so |
 | Walls | 5 on the body, Y plate, lens panel and rotator; 4 elsewhere |
 | Infill | 30 % gyroid; 100 % for the worm, the knob's gear, the pinion, the rack, the knobs, the collar, the board, the mount, the plugs and the peg |
-| Supports | none |
+| Supports | none, except the lens mount: its ring stands 6.5 mm out over the stub, so paint supports under the ring (tree, on build plate only); sand the ring's back flat where they touched, it seats on the helicoid |
 | Brim | ears on the body, Y plate, lens panel and rotator corners; a 5 mm brim around the worm (84 mm tall, 10 wide), the rise knob's gear and the two long plugs |
 
 The wave washers bridge over their own three feet (half a millimetre, 8 mm spans): no supports, a little sag does no harm.

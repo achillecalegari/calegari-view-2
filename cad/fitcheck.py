@@ -124,8 +124,8 @@ report("knob's gear goes in from the side: clear of the body (none)",
        max(ov(Pos(-dx, 0, 0) * kgp, body) for dx in (3.0, 8.0, 14.0)), 0, 0.05)
 bush = Pos(-H, M.BEVEL_Y, WORM_Z) * orient(M.collar(), "+x")
 report("collar pressed into the side bore", ov(bush, body), 0.5, 8)
-report("collar vs the knob's gear (none: 0.2 mm end play)", ov(bush, kgp), 0, 0.01)
-report("collar holds the gear: pulled out 0.3 mm it meets the collar", ov(bush, Pos(-0.3, 0, 0) * kgp), 0.01, 50)
+report("collar vs the knob's gear (none: end play)", ov(bush, kgp), 0, 0.01)
+report("collar holds the gear: pulled out 0.6 mm it meets the collar", ov(bush, Pos(-0.6, 0, 0) * kgp), 0.01, 50)
 report("worm lifted 0.4 mm: its top boss meets the knob's stub", ov(Pos(0, 0.4, 0) * wpl & clip, kgp & clip), 0.001, 5)
 side = (WORM_X - M.BEVEL_R) + H
 kn_r = M.knob_gear_place(0) * Pos(0, 0, side + KNOB_OFF + KNOB_H) * Rot(180, 0, 0) * M.knob()
